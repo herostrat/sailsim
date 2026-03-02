@@ -1,0 +1,34 @@
+name = "aggressive_pid_6dof"
+duration_s = 120.0
+dt = 0.05
+
+[yacht]
+profile = "default"
+dof = 6
+
+[wind]
+speed = 6.0
+direction = 1.047  # ~60° close reach
+model = "gust"
+gust_intensity = 2.0
+gust_tau = 10.0
+gust_seed = 42
+
+[initial_state]
+x = 0.0
+y = 0.0
+psi = 0.15  # start ~9° off target
+u = 2.0
+
+[autopilot]
+target_heading = 0.0
+kp = 2.0
+ki = 0.3
+kd = 1.0
+auto_sail_trim = true
+
+[quality_gates]
+max_heading_deviation_deg = 15.0
+max_settling_time_s = 40.0
+max_mean_heading_error_deg = 5.0
+max_rudder_rate_deg_per_s = 80.0

@@ -1,0 +1,77 @@
+# Default 10m cruiser/racer yacht
+#
+# These parameters define a generic medium-displacement sailing yacht.
+# Scenarios can reference this profile with: profile = "default"
+# and override individual values as needed.
+
+# Mass properties
+mass = 4000.0       # [kg]
+Iz = 25000.0        # yaw moment of inertia [kg*m^2]
+xg = 0.0            # longitudinal CG position [m]
+
+# Added mass coefficients
+X_udot = -200.0
+Y_vdot = -4000.0
+Y_rdot = -400.0
+N_vdot = -400.0
+N_rdot = -15000.0
+
+# Linear damping
+Xu = -100.0
+Yv = -2000.0
+Yr = -500.0
+Nv = -500.0
+Nr = -20000.0
+
+# Quadratic damping
+Xuu = -50.0
+Yvv = -3000.0
+Yrr = -500.0
+Nvv = -500.0
+Nrr = -50000.0
+
+# Sail properties
+sail_area = 50.0     # [m^2]
+mast_height = 12.0   # [m]
+sail_ce_x = 0.3      # longitudinal centre of effort [m]
+
+# Rudder properties
+rudder_area = 0.25   # [m^2]
+rudder_x = -4.5      # longitudinal position [m]
+rudder_max = 0.52    # max deflection [rad] (~30°)
+
+# Keel properties
+keel_area = 1.5      # [m^2]
+keel_x = -0.3        # longitudinal position [m]
+
+# --- 6-DOF extensions ---
+# These are only used when dof = 6. Ignored for 3-DOF simulations.
+
+Ix = 8000.0          # roll moment of inertia [kg*m^2]
+Iy = 30000.0         # pitch moment of inertia [kg*m^2]
+zg = 0.2             # vertical CG above centre of origin [m]
+
+# 6-DOF added mass
+Z_wdot = -4000.0
+K_pdot = -500.0
+M_qdot = -20000.0
+
+# 6-DOF linear damping
+Zw = -3000.0         # heave damping
+Kp = -5000.0         # roll damping (keel + hull)
+Mq = -30000.0        # pitch damping
+
+# 6-DOF quadratic damping
+Zww = -3000.0
+Kpp = -3000.0
+Mqq = -20000.0
+
+# Appendage depths (6-DOF moment arms)
+sail_ce_z = 5.0      # sail CE height above WL [m]
+rudder_z = 0.8       # rudder center depth below WL [m]
+keel_z = 1.5         # keel CLR depth below WL [m]
+
+# Hydrostatics
+GM_T = 1.2           # transverse metacentric height [m]
+GM_L = 15.0          # longitudinal metacentric height [m]
+Aw = 22.0            # waterplane area [m^2]

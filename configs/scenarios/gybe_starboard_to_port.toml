@@ -1,0 +1,33 @@
+name = "gybe_starboard_to_port"
+duration_s = 120.0
+dt = 0.05
+
+[yacht]
+profile = "default"
+
+[wind]
+speed = 5.0
+direction = 3.1416  # from south (dead astern when heading north)
+
+[autopilot]
+kp = 0.5
+ki = 0.1
+kd = 3.0
+target_heading = 0.3491  # broad reach starboard (~20°)
+auto_sail_trim = true
+
+[initial_state]
+x = 0.0
+y = 0.0
+psi = 0.3491
+u = 2.0
+
+[[maneuvers.steps]]
+time_s = 30.0
+target_heading = -0.3491  # gybe to port (-20°)
+
+[quality_gates]
+max_heading_deviation_deg = 60.0
+max_rudder_rate_deg_per_s = 50.0
+max_settling_time_s = 60.0
+max_mean_heading_error_deg = 15.0

@@ -1,0 +1,44 @@
+name = "waypoint_triangle"
+duration_s = 300.0
+dt = 0.05
+
+[yacht]
+profile = "default"
+
+[wind]
+speed = 5.0
+direction = 1.047  # ~60° close reach from starboard
+
+[autopilot]
+kp = 2.0
+ki = 0.15
+kd = 2.5
+target_heading = 0.0  # overridden by waypoint guidance
+auto_sail_trim = true
+
+[initial_state]
+x = 0.0
+y = 0.0
+psi = 0.0
+u = 2.0
+
+[[route.waypoints]]
+x = 100.0
+y = 0.0
+tolerance = 15.0
+
+[[route.waypoints]]
+x = 100.0
+y = 100.0
+tolerance = 15.0
+
+[[route.waypoints]]
+x = 0.0
+y = 100.0
+tolerance = 15.0
+
+[quality_gates]
+max_heading_deviation_deg = 90.0
+max_rudder_rate_deg_per_s = 50.0
+max_settling_time_s = 300.0
+max_mean_heading_error_deg = 45.0

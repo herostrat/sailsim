@@ -1,0 +1,42 @@
+name = "rough_6dof"
+duration_s = 120.0
+dt = 0.05
+
+[yacht]
+profile = "default"
+dof = 6
+
+[wind]
+speed = 8.0
+direction = 1.5708  # 90° beam reach
+model = "gust"
+gust_intensity = 3.0
+gust_seed = 42
+
+[current]
+model = "constant"
+speed = 0.5
+direction = 0.0  # flows north
+
+[waves]
+model = "spectral"
+Hs = 1.0
+Tp = 6.0
+direction = 1.5708
+seed = 42
+
+[initial_state]
+u = 2.0
+
+[autopilot]
+target_heading = 0.0
+kp = 1.0
+ki = 0.05
+kd = 2.0
+auto_sail_trim = true
+
+[quality_gates]
+max_heading_deviation_deg = 30.0
+max_settling_time_s = 60.0
+max_mean_heading_error_deg = 15.0
+max_rudder_rate_deg_per_s = 60.0
