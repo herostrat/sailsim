@@ -84,7 +84,7 @@ def run_scenario(config: ScenarioConfig, autopilot: AutopilotProtocol) -> Record
     wave_model = build_wave_model(config.waves)
 
     # Set autopilot target
-    target_heading = config.autopilot.target_heading
+    target_heading = config.target_heading
     autopilot.set_target_heading(target_heading)
 
     # Prepare maneuver queue (sorted by time)
@@ -162,6 +162,7 @@ def run_scenario(config: ScenarioConfig, autopilot: AutopilotProtocol) -> Record
 
         # Compute force breakdown at current state (before step)
         forces = yacht.compute_forces(wind, control, waves)
+        rudder_torque = float(-forces.rudder[1] * config.yacht.rudder_cp_offset)
 
         # Record current state with forces
         recorder.record(
@@ -175,6 +176,7 @@ def run_scenario(config: ScenarioConfig, autopilot: AutopilotProtocol) -> Record
             waves=waves,
             target_heading=target_heading,
             active_waypoint_index=active_wp_idx,
+            rudder_torque=rudder_torque,
         )
 
         # Autopilot computes new control
@@ -192,6 +194,7 @@ def run_scenario(config: ScenarioConfig, autopilot: AutopilotProtocol) -> Record
     waves = wave_model.get(t)
     sensors = SensorData.from_state(yacht.state, wind, current)
     forces = yacht.compute_forces(wind, control, waves)
+    rudder_torque = float(-forces.rudder[1] * config.yacht.rudder_cp_offset)
     recorder.record(
         t,
         yacht.state,
@@ -203,6 +206,7 @@ def run_scenario(config: ScenarioConfig, autopilot: AutopilotProtocol) -> Record
         waves=waves,
         target_heading=target_heading,
         active_waypoint_index=active_wp_idx,
+        rudder_torque=rudder_torque,
     )
 
     return recorder

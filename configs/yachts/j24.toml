@@ -1,0 +1,82 @@
+# J/24
+# J/24 one-design racing keelboat (7.3m, 1406 kg)
+#
+# Estimated from: LOA=7.32m, LWL=6.1m, BWL=2.72m,
+#   T=1.22m, Displacement=1406kg, Cb=0.24
+# Method: Clarke (1983) + ITTC rules of thumb
+# See docs/yacht_coefficient_estimation.md
+
+mass = 1406                     # kg
+Iz = 3270.0                     # yaw moment of inertia [kg*m^2]
+xg = 0.0                        # longitudinal CG position [m]
+
+# Added mass coefficients
+X_udot = -125.9
+Y_vdot = -703.0
+Y_rdot = -119.9
+N_vdot = -119.9
+N_rdot = -327.0
+
+# Linear damping
+Xu = -76.6
+Yv = -3005.0
+Yr = -737.0
+Nv = -737.0
+Nr = -8035.0
+
+# Quadratic damping
+Xuu = -42.7
+Yvv = -2683.0
+Yrr = -4014.0
+Nvv = -658.1
+Nrr = -43761.0
+
+# Sail properties
+sail_area = 32.0                # m^2
+mast_height = 8.5               # m
+# sail_ce_x: sail centre of effort, longitudinal position from CO [m]
+#   Negative = aft of CO.  For weather helm, CE must be AFT of keel CLR.
+#   Lead (keel_x − sail_ce_x) should be 3-5% of LWL.
+sail_ce_x = -0.15
+
+# Rudder properties
+rudder_area = 0.1               # m^2
+rudder_x = -2.9                 # longitudinal position [m]
+rudder_max = 0.52               # max deflection [rad]
+rudder_cp_offset = 0.06         # stock-to-centre-of-pressure [m]
+
+# Keel properties
+keel_area = 0.5                 # m^2
+# keel_x: keel centre of lateral resistance (CLR), longitudinal position [m]
+#   Positive = forward of CO.  Must be forward of sail CE for weather helm.
+keel_x = 0.10
+
+# --- 6-DOF extensions ---
+Ix = 1629.0                     # roll moment of inertia [kg*m^2]
+Iy = 3814.0                     # pitch moment of inertia [kg*m^2]
+zg = 0.068                      # vertical CG above origin [m]
+
+# 6-DOF added mass
+Z_wdot = -562.4
+K_pdot = -244.3
+M_qdot = -294.3
+
+# 6-DOF linear damping
+Zw = -2404.0
+Kp = -636.5
+Mq = -7231.0
+
+# 6-DOF quadratic damping
+Zww = -2146.0
+Kpp = -1546.0
+Mqq = -39385.0
+
+# Appendage depths (6-DOF moment arms)
+sail_ce_z = 4.31                # sail CE height above WL [m]
+rudder_z = 0.27                 # rudder center depth below WL [m]
+keel_z = 0.796                  # keel CLR depth below WL [m]
+
+# Hydrostatics
+GM_T = 0.8                      # transverse metacentric height [m]
+GM_L = 10.0                     # longitudinal metacentric height [m]
+Aw = 10.8                       # waterplane area [m^2]

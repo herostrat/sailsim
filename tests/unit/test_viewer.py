@@ -167,6 +167,38 @@ def test_viewer_attitude_patches_per_run():
     plt.close("all")
 
 
+def test_viewer_torque_and_energy_axes():
+    """Torque and energy axes should exist on page 3."""
+    rec = _make_3dof_recording()
+    viewer = PlaybackViewer([("test", rec)])
+    assert hasattr(viewer, "_ax_torque")
+    assert hasattr(viewer, "_ax_energy")
+    # Energy is twin of torque
+    assert viewer._ax_energy.get_shared_x_axes().joined(viewer._ax_energy, viewer._ax_torque)
+    plt.close("all")
+
+
+def test_viewer_torque_axes_visibility_on_page_switch():
+    """Torque and energy axes visible only on page 3 (Forces)."""
+    rec = _make_3dof_recording()
+    viewer = PlaybackViewer([("test", rec)])
+
+    # Page 0: torque hidden
+    assert not viewer._ax_torque.get_visible()
+    assert not viewer._ax_energy.get_visible()
+
+    # Switch to page 2 (Forces)
+    viewer._switch_page(2)
+    assert viewer._ax_torque.get_visible()
+    assert viewer._ax_energy.get_visible()
+
+    # Switch back to page 0
+    viewer._switch_page(0)
+    assert not viewer._ax_torque.get_visible()
+    assert not viewer._ax_energy.get_visible()
+    plt.close("all")
+
+
 def test_viewer_attitude_rotation_updates():
     """Attitude patches should update when cursors move."""
     rec = _make_6dof_recording()

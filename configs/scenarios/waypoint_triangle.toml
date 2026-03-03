@@ -1,20 +1,11 @@
 name = "waypoint_triangle"
 duration_s = 300.0
 dt = 0.05
-
-[yacht]
-profile = "default"
+target_heading = 0.0  # overridden by waypoint guidance
 
 [wind]
 speed = 5.0
-direction = 1.047  # ~60° close reach from starboard
-
-[autopilot]
-kp = 2.0
-ki = 0.15
-kd = 2.5
-target_heading = 0.0  # overridden by waypoint guidance
-auto_sail_trim = true
+direction = 4.712  # ~270° from west — all legs are reach/run, no head-to-wind
 
 [initial_state]
 x = 0.0

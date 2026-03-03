@@ -9,13 +9,8 @@ from pydantic import BaseModel
 
 
 class YachtConfig(BaseModel):
-    """Yacht physical parameters (maps to YachtParams / YachtParams6DOF).
+    """Yacht physical parameters (maps to YachtParams / YachtParams6DOF)."""
 
-    Use ``profile`` to load parameters from a TOML file in configs/yachts/.
-    Individual fields set in the scenario override the profile values.
-    """
-
-    profile: str | None = None  # e.g. "default" → configs/yachts/default.toml
     dof: int = 3  # 3 or 6
 
     # Mass properties
@@ -53,6 +48,7 @@ class YachtConfig(BaseModel):
     rudder_area: float = 0.25
     rudder_x: float = -4.5
     rudder_max: float = 0.52
+    rudder_cp_offset: float = 0.08  # stock-to-centre-of-pressure [m]
 
     # Keel
     keel_area: float = 1.5
@@ -102,13 +98,23 @@ class WindConfig(BaseModel):
 
 
 class AutopilotConfig(BaseModel):
-    """PID autopilot parameters."""
+    """Autopilot configuration.
 
-    kp: float = 1.0
-    ki: float = 0.05
-    kd: float = 0.8
-    target_heading: float = 0.0  # [rad]
+    The ``type`` field selects the autopilot implementation
+    ("nomoto" or "signalk").
+    """
+
+    type: str = "nomoto"  # "nomoto" | "signalk"
     auto_sail_trim: bool = False
+
+    # SignalK parameters
+    signalk_url: str = "http://localhost:3000"
+
+    # Nomoto parameters (type="nomoto")
+    omega_n: float = 0.5
+    zeta: float = 0.8
+    rudder_rate_max_deg_s: float = 5.0
+    U_min: float = 0.5
 
 
 class InitialStateConfig(BaseModel):
@@ -181,45 +187,104 @@ class RouteConfig(BaseModel):
 
 
 class ScenarioConfig(BaseModel):
-    """Complete scenario configuration."""
+    """Complete scenario configuration.
+
+    Describes *what* happens (environment, timing, maneuvers) but not *which*
+    yacht or autopilot to use — those are loaded separately via
+    :func:`load_yacht` and :func:`load_autopilot`.
+    """
 
     name: str = "unnamed"
     duration_s: float = 120.0
     dt: float = 0.05  # 20 Hz
+    target_heading: float = 0.0  # initial heading target [rad]
     yacht: YachtConfig = YachtConfig()
     wind: WindConfig = WindConfig()
     current: CurrentConfig = CurrentConfig()
     waves: WaveConfig = WaveConfig()
-    autopilot: AutopilotConfig = AutopilotConfig()
     initial_state: InitialStateConfig = InitialStateConfig()
     maneuvers: ManeuverConfig = ManeuverConfig()
     route: RouteConfig = RouteConfig()
     quality_gates: QualityGateConfig = QualityGateConfig()
 
 
-def load_scenario(path: str | Path) -> ScenarioConfig:
-    """Load and validate a scenario from a TOML file.
+def _find_configs_root() -> Path:
+    """Find the ``configs/`` directory by walking up from CWD."""
+    d = Path.cwd()
+    while d != d.parent:
+        if (d / "configs").is_dir():
+            return d / "configs"
+        d = d.parent
+    raise FileNotFoundError("Cannot find configs/ directory. Run from the project root.")
 
-    If the ``[yacht]`` section contains a ``profile`` key, the corresponding
-    TOML file is loaded from ``configs/yachts/<profile>.toml`` (resolved
-    relative to the scenario file) and used as the base.  Any yacht fields
-    set directly in the scenario override the profile values.
+
+def _load_toml(name_or_path: str | Path, subdir: str, configs_root: Path | None = None) -> dict:
+    """Load a TOML file by profile name or file path.
+
+    Treated as a file path when it contains a path separator (``/``)
+    or points to an existing file.  Otherwise it is resolved as a
+    profile name: ``configs/<subdir>/<name>.toml`` (the ``.toml``
+    suffix is stripped first if present, so both ``j24`` and
+    ``j24.toml`` work as profile names).
     """
-    path = Path(path)
-    with path.open("rb") as f:
-        data = tomllib.load(f)
+    s = str(name_or_path)
+    # Explicit path: contains separator or file exists at that location
+    if "/" in s or "\\" in s or Path(s).is_file():
+        p = Path(s)
+    else:
+        # Strip optional .toml suffix so "dehler34.toml" == "dehler34"
+        name = s.removesuffix(".toml")
+        if configs_root is None:
+            configs_root = _find_configs_root()
+        p = configs_root / subdir / f"{name}.toml"
+    with p.open("rb") as f:
+        return tomllib.load(f)
 
-    # Resolve yacht profile
-    yacht_data = data.get("yacht", {})
-    profile = yacht_data.get("profile")
-    if profile:
-        yacht_dir = path.parent.parent / "yachts"
-        yacht_file = yacht_dir / f"{profile}.toml"
-        with yacht_file.open("rb") as f:
-            profile_data = tomllib.load(f)
-        # Scenario-specific overrides on top of profile defaults
-        profile_data.update(yacht_data)
-        profile_data.pop("profile", None)
-        data["yacht"] = profile_data
+
+def load_scenario(
+    name_or_path: str | Path = "calm_heading_hold",
+    *,
+    configs_root: Path | None = None,
+) -> ScenarioConfig:
+    """Load a scenario from a profile name or TOML path.
+
+    The scenario TOML should contain environment, timing, maneuvers, and
+    quality gates.  ``[yacht]`` and ``[autopilot]`` sections are ignored
+    (use :func:`load_yacht` and :func:`load_autopilot` instead).
+
+    Examples::
+
+        load_scenario("calm_heading_hold")              # → configs/scenarios/calm_heading_hold.toml
+        load_scenario("configs/scenarios/custom.toml")   # → file path
+    """
+    data = _load_toml(name_or_path, "scenarios", configs_root)
+
+    # Strip yacht/autopilot — those are loaded separately
+    data.pop("yacht", None)
+    data.pop("autopilot", None)
 
     return ScenarioConfig(**data)
+
+
+def load_yacht(name_or_path: str | Path = "default", *, configs_root: Path | None = None) -> YachtConfig:
+    """Load a yacht configuration from a profile name or TOML path.
+
+    Examples::
+
+        load_yacht("j24")                 # → configs/yachts/j24.toml
+        load_yacht("configs/yachts/j24.toml")  # → file path
+    """
+    data = _load_toml(name_or_path, "yachts", configs_root)
+    return YachtConfig(**data)
+
+
+def load_autopilot(name_or_path: str | Path = "heading_hold", *, configs_root: Path | None = None) -> AutopilotConfig:
+    """Load an autopilot configuration from a profile name or TOML path.
+
+    Examples::
+
+        load_autopilot("tack")             # → configs/autopilots/tack.toml
+        load_autopilot("/tmp/my_ap.toml")  # → file path
+    """
+    data = _load_toml(name_or_path, "autopilots", configs_root)
+    return AutopilotConfig(**data)

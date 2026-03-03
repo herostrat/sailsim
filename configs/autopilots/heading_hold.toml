@@ -1,0 +1,6 @@
+# Heading hold — moderate Nomoto gains for steady-state course keeping
+type = "nomoto"
+omega_n = 0.5
+zeta = 0.8
+rudder_rate_max_deg_s = 5.0
+auto_sail_trim = true

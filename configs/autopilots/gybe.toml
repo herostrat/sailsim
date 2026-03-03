@@ -1,0 +1,6 @@
+# Gybe maneuver — moderate Nomoto gains
+type = "nomoto"
+omega_n = 0.5
+zeta = 0.7
+rudder_rate_max_deg_s = 10.0
+auto_sail_trim = true

@@ -123,25 +123,27 @@ class TestSailForces3DOFWithTrim:
             assert forces_opt[0] >= forces_default[0] - 1.0  # allow small tolerance
 
 
-class TestPIDAutoSailTrim:
-    """Tests for PID autopilot auto_sail_trim option."""
+class TestNomotoAutoSailTrim:
+    """Tests for Nomoto autopilot auto_sail_trim option."""
 
     def test_auto_trim_disabled_gives_default(self):
         """With auto_sail_trim=False, sail_trim should be 0.5."""
-        from sailsim.autopilot.pid import PIDAutopilot
+        from sailsim.autopilot.nomoto import NomotoAutopilot
+        from sailsim.core.config import YachtConfig
         from sailsim.core.types import SensorData
 
-        pilot = PIDAutopilot(auto_sail_trim=False)
+        pilot = NomotoAutopilot(yacht=YachtConfig(), auto_sail_trim=False)
         sensors = SensorData(heading=0.0, yaw_rate=0.0, apparent_wind_angle=np.radians(60))
         cmd = pilot.compute(sensors, dt=0.05)
         assert cmd.sail_trim == 0.5
 
     def test_auto_trim_enabled_adjusts_trim(self):
         """With auto_sail_trim=True, sail_trim should match optimal for AWA."""
-        from sailsim.autopilot.pid import PIDAutopilot
+        from sailsim.autopilot.nomoto import NomotoAutopilot
+        from sailsim.core.config import YachtConfig
         from sailsim.core.types import SensorData
 
-        pilot = PIDAutopilot(auto_sail_trim=True)
+        pilot = NomotoAutopilot(yacht=YachtConfig(), auto_sail_trim=True)
 
         for awa_deg in [40, 90, 150]:
             awa = np.radians(awa_deg)

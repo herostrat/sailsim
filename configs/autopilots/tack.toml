@@ -1,0 +1,6 @@
+# Tack maneuver — responsive Nomoto gains for fast heading change
+type = "nomoto"
+omega_n = 0.6
+zeta = 0.7
+rudder_rate_max_deg_s = 10.0
+auto_sail_trim = true

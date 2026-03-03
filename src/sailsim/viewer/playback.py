@@ -3,7 +3,7 @@
 Three-page layout (one parameter per panel, no twin axes):
   Page 1 (Steering): Heading+target, Rudder, Roll, STW, Yaw rate
   Page 2 (Environment): TWS, TWD, Wave elevation, SOG, Sail trim
-  Page 3 (Forces): Force X, Force Y, Moment N, Pitch, (reserved)
+  Page 3 (Forces): Force X, Force Y, Moment N, Pitch, Rudder torque + energy
 
 Left column = trajectory map (top) + attitude indicators (middle) + readout (bottom).
 Top = global run-color legend.
@@ -280,14 +280,15 @@ class PlaybackViewer:
         self._ax_fy = self._fig.add_axes(positions[1], sharex=self._ax_fx)
         self._ax_fn = self._fig.add_axes(positions[2], sharex=self._ax_fx)
         self._ax_pitch = self._fig.add_axes(positions[3], sharex=self._ax_fx)
-        self._ax_p3_reserved = self._fig.add_axes(positions[4], sharex=self._ax_fx)
+        self._ax_torque = self._fig.add_axes(positions[4], sharex=self._ax_fx)
+        self._ax_energy = self._ax_torque.twinx()
 
         page3 = [
             self._ax_fx,
             self._ax_fy,
             self._ax_fn,
             self._ax_pitch,
-            self._ax_p3_reserved,
+            self._ax_torque,
         ]
 
         self._page_axes = [page1, page2, page3]
@@ -295,6 +296,7 @@ class PlaybackViewer:
         # Initially hide pages 2 and 3
         for ax in page2 + page3:
             ax.set_visible(False)
+        self._ax_energy.set_visible(False)
 
         # Collect all time-series axes for cursor lines
         self._all_ts_axes = page1 + page2 + page3
@@ -505,6 +507,16 @@ class PlaybackViewer:
             pitches = [np.degrees(s.state.theta) for s in rec.steps]
             self._ax_pitch.plot(times, pitches, color=color, lw=1)
 
+            # Rudder torque + cumulative energy
+            torques = [s.rudder_torque if s.rudder_torque is not None else 0.0 for s in rec.steps]
+            self._ax_torque.plot(times, torques, color=color, lw=1)
+            energy = np.cumsum([abs(t) * abs(
+                rec.steps[i].control.rudder_angle - rec.steps[i - 1].control.rudder_angle
+            ) if i > 0 else 0.0 for i, t in enumerate(torques)])
+            self._ax_energy.plot(
+                times, energy, color=color, ls="--", lw=1, alpha=0.7,
+            )
+
         # ── Trajectory decorations ──
         self._ax_traj.plot([], [], color="#17becf", lw=2.5, label="Wind")
         self._ax_traj.plot([], [], color="#ff6600", lw=2.5, label="Current")
@@ -579,9 +591,10 @@ class PlaybackViewer:
         self._ax_pitch.set_ylabel("Pitch [\u00b0]")
         self._ax_pitch.grid(True, alpha=0.3)
 
-        self._ax_p3_reserved.set_ylabel("")
-        self._ax_p3_reserved.set_xlabel("Time [s]")
-        self._ax_p3_reserved.grid(True, alpha=0.3)
+        self._ax_torque.set_ylabel("Torque [Nm]")
+        self._ax_torque.set_xlabel("Time [s]")
+        self._ax_torque.grid(True, alpha=0.3)
+        self._ax_energy.set_ylabel("Energy [J]")
 
         # ── Attitude indicator static elements ──
         for ax, title in [(self._ax_bow, "Roll"), (self._ax_side, "Pitch"), (self._ax_top, "Yaw")]:
@@ -1050,7 +1063,9 @@ class PlaybackViewer:
 
         pitch_deg = np.degrees(step.state.theta)
         wave_el = step.waves.elevation if step.waves else 0.0
+        torque = step.rudder_torque if step.rudder_torque is not None else 0.0
         parts.append(f"Pitch {pitch_deg:+.2f}\u00b0  Wave elev {wave_el:+.3f} m")
+        parts.append(f"Rudder torque {torque:+.1f} Nm")
 
     # ── Page switching ─────────────────────────────────────────────────
 
@@ -1063,6 +1078,9 @@ class PlaybackViewer:
         for i, axes in enumerate(self._page_axes):
             for ax in axes:
                 ax.set_visible(i == page)
+
+        # Twin axis for energy must be toggled explicitly
+        self._ax_energy.set_visible(page == 2)
 
         for i, btn in enumerate(self._page_buttons):
             btn.label.set_fontweight("bold" if i == page else "normal")

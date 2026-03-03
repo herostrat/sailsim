@@ -35,6 +35,7 @@ class TimeStep:
     waves: WaveState | None = None
     target_heading: float | None = None
     active_waypoint_index: int | None = None
+    rudder_torque: float | None = None
 
 
 class Recorder:
@@ -56,6 +57,7 @@ class Recorder:
         waves: WaveState | None = None,
         target_heading: float | None = None,
         active_waypoint_index: int | None = None,
+        rudder_torque: float | None = None,
     ) -> None:
         """Record a single time step."""
         self.steps.append(
@@ -70,6 +72,7 @@ class Recorder:
                 waves=waves,
                 target_heading=target_heading,
                 active_waypoint_index=active_waypoint_index,
+                rudder_torque=rudder_torque,
             )
         )
 
@@ -220,6 +223,7 @@ class Recorder:
                 }
             step_dict["target_heading"] = step.target_heading
             step_dict["active_waypoint_index"] = step.active_waypoint_index
+            step_dict["rudder_torque"] = step.rudder_torque
             steps_data.append(step_dict)
 
         doc = {
@@ -271,6 +275,7 @@ class Recorder:
 
             target_heading = s.get("target_heading")
             active_waypoint_index = s.get("active_waypoint_index")
+            rudder_torque = s.get("rudder_torque")
 
             recorder.steps.append(
                 TimeStep(
@@ -287,6 +292,7 @@ class Recorder:
                     waves=waves,
                     target_heading=target_heading,
                     active_waypoint_index=active_waypoint_index,
+                    rudder_torque=rudder_torque,
                 )
             )
         return recorder

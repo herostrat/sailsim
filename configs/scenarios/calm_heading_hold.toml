@@ -1,19 +1,11 @@
 name = "calm_heading_hold"
 duration_s = 120.0
 dt = 0.05
-
-[yacht]
-profile = "default"
+target_heading = 0.0  # hold north (0 rad)
 
 [wind]
 speed = 5.0         # 5 m/s (~10 knots), gentle breeze
 direction = 1.047   # ~60° from north (close reach from starboard)
-
-[autopilot]
-kp = 0.3
-ki = 0.1
-kd = 4.0
-target_heading = 0.0  # hold north (0 rad)
 
 [initial_state]
 x = 0.0

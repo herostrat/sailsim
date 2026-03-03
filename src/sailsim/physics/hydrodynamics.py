@@ -134,6 +134,8 @@ def keel_forces_3dof(
 
     Y_keel = q * keel_area * cl
     X_keel = -q * keel_area * cd
+    # Yaw moment: keel lateral force * lever arm.
+    # Weather helm: keel_x > 0 (CLR forward) → N_keel turns bow to windward.
     N_keel = Y_keel * keel_x
 
     return np.array([X_keel, Y_keel, N_keel])

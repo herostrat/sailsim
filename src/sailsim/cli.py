@@ -8,8 +8,8 @@ from pathlib import Path
 
 import numpy as np
 
-from sailsim.autopilot.pid import PIDAutopilot
-from sailsim.core.config import ScenarioConfig, load_scenario
+from sailsim.autopilot.factory import create_autopilot
+from sailsim.core.config import load_autopilot, load_scenario, load_yacht
 from sailsim.core.runner import run_scenario
 from sailsim.recording.analysis import evaluate_heading_hold
 from sailsim.recording.recorder import Recorder
@@ -23,7 +23,20 @@ def main() -> None:
     parser.add_argument(
         "--scenario",
         type=str,
-        help="Path to scenario TOML file",
+        default="calm_heading_hold",
+        help="Scenario profile name or TOML path (default: 'calm_heading_hold')",
+    )
+    parser.add_argument(
+        "--yacht",
+        type=str,
+        default="default",
+        help="Yacht profile name or TOML path (default: 'default')",
+    )
+    parser.add_argument(
+        "--autopilot",
+        type=str,
+        default="heading_hold",
+        help="Autopilot profile name or TOML path (default: 'heading_hold')",
     )
     parser.add_argument(
         "--output",
@@ -64,29 +77,25 @@ def main() -> None:
         return
 
     # Load scenario
-    if args.scenario:
-        config = load_scenario(args.scenario)
-    else:
-        config = ScenarioConfig(
-            name="default_heading_hold",
-            duration_s=120.0,
-            dt=0.05,
-        )
+    config = load_scenario(args.scenario)
+
+    # Load yacht and autopilot separately
+    config.yacht = load_yacht(args.yacht)
+    ap_config = load_autopilot(args.autopilot)
+    autopilot = create_autopilot(ap_config, yacht=config.yacht)
 
     if not args.quiet:
         print(f"Scenario: {config.name}")
-        print(f"Duration: {config.duration_s}s, dt: {config.dt}s")
-        print(f"Wind: {config.wind.speed:.1f} m/s @ {np.degrees(config.wind.direction):.0f}°")
-        print(f"Target heading: {np.degrees(config.autopilot.target_heading):.0f}°")
+        print(f"  Yacht: {args.yacht}")
+        if ap_config.type == "signalk":
+            ap_info = f"signalk @ {ap_config.signalk_url}"
+        else:
+            ap_info = f"nomoto (omega_n={ap_config.omega_n}, zeta={ap_config.zeta})"
+        print(f"  Autopilot: {ap_info} [{args.autopilot}]")
+        print(f"  Duration: {config.duration_s}s, dt: {config.dt}s")
+        print(f"  Wind: {config.wind.speed:.1f} m/s @ {np.degrees(config.wind.direction):.0f}°")
+        print(f"  Target heading: {np.degrees(config.target_heading):.0f}°")
         print()
-
-    # Create autopilot
-    autopilot = PIDAutopilot(
-        kp=config.autopilot.kp,
-        ki=config.autopilot.ki,
-        kd=config.autopilot.kd,
-        auto_sail_trim=config.autopilot.auto_sail_trim,
-    )
 
     # Run simulation
     if not args.quiet:
@@ -114,7 +123,7 @@ def main() -> None:
             print()
 
     # Evaluate quality gates
-    target_heading_deg = np.degrees(config.autopilot.target_heading)
+    target_heading_deg = np.degrees(config.target_heading)
     result = evaluate_heading_hold(
         recorder,
         target_heading_deg,

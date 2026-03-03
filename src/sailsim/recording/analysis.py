@@ -209,6 +209,60 @@ def evaluate_maneuver(
 
 
 @dataclass
+class SteeringEffortResult:
+    """Result of steering effort evaluation."""
+
+    peak_torque_nm: float  # max |T|
+    mean_torque_nm: float  # mean |T|
+    total_energy_j: float  # cumulative energy [J]
+    energy_rate_j_per_s: float  # mean power [W]
+
+
+def evaluate_steering_effort(recorder: Recorder) -> SteeringEffortResult:
+    """Evaluate rudder steering effort from recorded torque data.
+
+    Args:
+        recorder: completed simulation recording (with rudder_torque)
+
+    Returns:
+        SteeringEffortResult with peak/mean torque, energy, and power.
+    """
+    torques = [s.rudder_torque for s in recorder.steps if s.rudder_torque is not None]
+
+    if not torques:
+        return SteeringEffortResult(
+            peak_torque_nm=0.0,
+            mean_torque_nm=0.0,
+            total_energy_j=0.0,
+            energy_rate_j_per_s=0.0,
+        )
+
+    abs_torques = [abs(t) for t in torques]
+    peak = float(np.max(abs_torques))
+    mean = float(np.mean(abs_torques))
+
+    # Cumulative energy: sum |T_i * delta_rudder_i|
+    total_energy = 0.0
+    for i in range(1, len(recorder.steps)):
+        s_prev = recorder.steps[i - 1]
+        s_curr = recorder.steps[i]
+        if s_curr.rudder_torque is None:
+            continue
+        delta = abs(s_curr.control.rudder_angle - s_prev.control.rudder_angle)
+        total_energy += abs(s_curr.rudder_torque) * delta
+
+    duration = recorder.steps[-1].t - recorder.steps[0].t if len(recorder.steps) > 1 else 0.0
+    rate = total_energy / duration if duration > 0 else 0.0
+
+    return SteeringEffortResult(
+        peak_torque_nm=peak,
+        mean_torque_nm=mean,
+        total_energy_j=total_energy,
+        energy_rate_j_per_s=rate,
+    )
+
+
+@dataclass
 class WaypointResult:
     """Result of waypoint route evaluation."""
 

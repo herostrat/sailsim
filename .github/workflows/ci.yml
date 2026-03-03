@@ -57,3 +57,5 @@ jobs:
         run: |
           sailsim --scenario configs/scenarios/calm_heading_hold.toml --quiet
           sailsim --scenario configs/scenarios/moderate_beam_reach.toml --quiet
+          sailsim --scenario configs/scenarios/rough_seas.toml --quiet
+          sailsim --scenario configs/scenarios/compare_aggressive.toml --quiet

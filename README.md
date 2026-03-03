@@ -1,6 +1,8 @@
 # sailsim — Sailing Yacht Autopilot Simulator
 
-Note: This project is in early development. The core physics engine and viewer are functional, but the autopilot and scenario library are still being built out. Contributions and feedback are welcome!
+Note: This project is in early development. The core physics engine and viewer are functional, but the autopilot and scenario library are still being built out.
+Contributions and feedback are welcome!
+
 A physics-based simulation framework for developing and testing sailing yacht autopilots. It models the coupled dynamics of wind, waves, current, and vessel response so that autopilot controllers can be evaluated under realistic conditions — without going on the water.
 
 ## Purpose
@@ -43,7 +45,10 @@ Both modes use Fossen's marine vessel convention with added-mass, linear damping
 
 ### Autopilot
 
-A PID heading controller with configurable gains (Kp, Ki, Kd). Optional automatic sail trim adjusts the sheet based on apparent wind angle.
+The autopilot is pluggable — any implementation that satisfies the `AutopilotProtocol` (a `compute()` + `set_target_heading()` interface) can be used. Two implementations are included:
+
+- **Nomoto** (`type = "nomoto"`) — model-based heading controller that derives gains from the yacht's hydrodynamic coefficients using pole placement (natural frequency omega_n and damping ratio zeta). Includes rudder rate limiting and optional automatic sail trim based on apparent wind angle.
+- **SignalK** (`type = "signalk"`) — adapter that publishes sensor data to an external [SignalK](https://signalk.org/) server and reads rudder commands back via HTTP. This lets you test a real autopilot algorithm running outside the simulator.
 
 ### Navigation
 
@@ -57,24 +62,55 @@ Requires Python 3.12+.
 
 ```bash
 git clone <repo-url>
-cd sailing_autopilot_simultator
+cd sailsim
 pip install -e ".[dev]"
 ```
 
 ## Usage
 
+Every simulation combines three independent inputs:
+
+| Input | Flag | Default | What it defines |
+|-------|------|---------|-----------------|
+| **Scenario** | `--scenario` | built-in default | Environment, timing, maneuvers, quality gates |
+| **Yacht** | `--yacht` | `default` | Hull shape, mass, rig, appendages |
+| **Autopilot** | `--autopilot` | `heading_hold` | Controller type and tuning |
+
 ### Run a scenario
 
 ```bash
-sailsim --scenario configs/scenarios/calm_heading_hold.toml
+sailsim --scenario configs/scenarios/calm_heading_hold.toml --yacht default --autopilot heading_hold
 ```
 
-This runs the simulation, evaluates quality gates, and prints a pass/fail summary. Exit code 0 means all gates passed.
+This runs the simulation, evaluates quality gates, and prints a pass/fail summary. Exit code 0 means all gates passed. `--yacht` and `--autopilot` can be omitted here since these are the defaults.
+
+### Mix and match
+
+Yacht and autopilot are always separate from the scenario, so you can freely combine them:
+
+```bash
+# J24 hull with aggressive tack tuning
+sailsim --scenario configs/scenarios/tack_port_to_starboard.toml --yacht j24 --autopilot tack
+
+# Same scenario, different boat
+sailsim --scenario configs/scenarios/tack_port_to_starboard.toml --yacht swan45 --autopilot tack
+
+# Custom autopilot from a TOML file
+sailsim --scenario configs/scenarios/calm_heading_hold.toml --autopilot /path/to/my_gains.toml
+```
+
+### Use an external autopilot via SignalK
+
+```bash
+sailsim --scenario configs/scenarios/calm_heading_hold.toml --autopilot signalk
+```
+
+This connects to a SignalK server (default `http://localhost:3000`), publishes sensor data each time step, and reads the rudder angle back. Your autopilot algorithm runs externally and communicates through the SignalK API.
 
 ### Run and view interactively
 
 ```bash
-sailsim --scenario configs/scenarios/rough_6dof.toml --view
+sailsim --scenario configs/scenarios/rough_seas.toml --yacht default --autopilot heading_hold --view
 ```
 
 Opens the playback viewer after the simulation completes. Use the timeline slider to scrub through the recording.
@@ -83,8 +119,8 @@ Opens the playback viewer after the simulation completes. Use the timeline slide
 
 ```bash
 # Save two runs with different tunings
-sailsim --scenario configs/scenarios/compare_conservative.toml --save-json /tmp/conservative.json
-sailsim --scenario configs/scenarios/compare_aggressive.toml --save-json /tmp/aggressive.json
+sailsim --scenario configs/scenarios/compare_conservative.toml --autopilot heading_hold --save-json /tmp/conservative.json
+sailsim --scenario configs/scenarios/compare_aggressive.toml --autopilot tack --save-json /tmp/aggressive.json
 
 # Compare side-by-side in the viewer
 sailsim --view /tmp/conservative.json /tmp/aggressive.json
@@ -93,7 +129,7 @@ sailsim --view /tmp/conservative.json /tmp/aggressive.json
 ### Run a waypoint route
 
 ```bash
-sailsim --scenario configs/scenarios/waypoint_triangle.toml --save-json /tmp/triangle.json --view
+sailsim --scenario configs/scenarios/waypoint_triangle.toml --autopilot tack --save-json /tmp/triangle.json --view
 ```
 
 Waypoints are defined in the scenario TOML:
@@ -120,11 +156,38 @@ sailsim --scenario configs/scenarios/calm_heading_hold.toml --output telemetry.c
 
 | Flag | Description |
 |------|-------------|
-| `--scenario PATH` | Load scenario from a TOML file |
+| `--scenario PATH` | Scenario TOML file (environment, timing, maneuvers) |
+| `--yacht NAME\|PATH` | Yacht profile name or TOML path (default: `default`) |
+| `--autopilot NAME\|PATH` | Autopilot profile name or TOML path (default: `heading_hold`) |
 | `--view [JSON...]` | Launch viewer. No args: run + view. With args: load and compare JSON files |
 | `--save-json PATH` | Save recording as JSON |
 | `--output PATH` | Export telemetry to CSV |
 | `--quiet` | Suppress progress output |
+
+### Shell completion
+
+Tab completion for flags, scenario paths, and profile names is available for Bash and Zsh.
+
+**Bash** — add to `~/.bashrc`:
+
+```bash
+source /path/to/sailing_autopilot_simultator/completions/sailsim.bash
+```
+
+**Zsh** — add to `~/.zshrc` (before `compinit`):
+
+```zsh
+source /path/to/sailing_autopilot_simultator/completions/sailsim.zsh
+```
+
+Or copy `completions/sailsim.zsh` to a directory in your `$fpath` as `_sailsim`.
+
+Completion works for:
+- `--scenario` — TOML files in `configs/scenarios/`
+- `--yacht` — profile names from `configs/yachts/` + TOML file paths
+- `--autopilot` — profile names from `configs/autopilots/` + TOML file paths
+- `--view` — JSON files
+- `--output` / `--save-json` — file paths
 
 ## Viewer
 
@@ -138,20 +201,62 @@ The interactive playback viewer has three pages, switchable via buttons or keybo
 
 The left column shows the vessel trajectory with a desired track line (dotted), waypoint markers and tolerance circles (when applicable), attitude indicators (yacht cross-section views for roll, pitch, and yaw), and a numeric readout at the cursor position. Multiple recordings overlay with distinct colours for comparison.
 
-## Scenarios
+## Configuration
 
-Scenarios are defined in TOML files under `configs/scenarios/`. Each file specifies the yacht model, environment, autopilot gains, initial conditions, and quality gates.
+The configuration system is composable: scenario, yacht, and autopilot are always separate inputs.
+
+### Scenarios
+
+Scenarios define *what happens* — environment, timing, initial conditions, maneuvers, and quality gates. They do **not** contain yacht or autopilot parameters.
+
+```toml
+name = "calm_heading_hold"
+duration_s = 120.0
+dt = 0.05
+target_heading = 0.0
+
+[wind]
+speed = 5.0
+direction = 1.047
+
+[initial_state]
+psi = 0.1
+u = 2.0
+
+[quality_gates]
+max_heading_deviation_deg = 10.0
+max_settling_time_s = 30.0
+```
+
+Scenario files live in `configs/scenarios/`.
 
 | Scenario | Description |
 |----------|-------------|
-| `calm_heading_hold.toml` | 3-DOF, light wind, basic heading hold |
-| `moderate_beam_reach.toml` | 3-DOF, moderate beam reach |
-| `rough_6dof.toml` | 6-DOF with gusts, waves (Hs=1.0m), and current |
+| `calm_heading_hold.toml` | Light wind, basic heading hold |
+| `moderate_beam_reach.toml` | Moderate beam reach |
+| `rough_seas.toml` | Gusts, waves (Hs=1.0m), and current |
 | `tack_port_to_starboard.toml` | Tacking maneuver with scheduled heading change |
 | `gybe_starboard_to_port.toml` | Gybing maneuver |
-| `compare_conservative.toml` | 6-DOF, conservative PID (Kp=0.3, Ki=0.1, Kd=4.0) |
-| `compare_aggressive.toml` | 6-DOF, aggressive PID (Kp=2.0, Ki=0.3, Kd=1.0) |
-| `waypoint_triangle.toml` | 3 waypoints forming a triangle, line-of-sight guidance |
+| `compare_conservative.toml` | Gusty close reach for tuning comparison |
+| `compare_aggressive.toml` | Same conditions, different quality gates |
+| `waypoint_triangle.toml` | 3 waypoints forming a triangle |
+
+### Yacht profiles
+
+Yacht parameter files live in `configs/yachts/`. Each defines hull mass, rig dimensions, appendages, and hydrodynamic coefficients.
+
+Available hulls: `default`, `j24`, `swan45`, `dehler34`, `hr62`, `imoca60`, `mini650`.
+
+### Autopilot profiles
+
+Autopilot configurations live in `configs/autopilots/`:
+
+| Profile | Type | Description |
+|---------|------|-------------|
+| `heading_hold` | Nomoto | Moderate gains (omega_n=0.5, zeta=0.8) for steady-state course keeping |
+| `tack` | Nomoto | Responsive gains (omega_n=0.6, zeta=0.7) with fast rudder for tacking |
+| `gybe` | Nomoto | Moderate gains (omega_n=0.5, zeta=0.7) with fast rudder for gybing |
+| `signalk` | SignalK | External autopilot via SignalK server |
 
 ### Quality gates
 
@@ -166,7 +271,7 @@ Each scenario defines pass/fail thresholds:
 
 ```
 src/sailsim/
-  autopilot/       PID controller and base class
+  autopilot/       Autopilot protocol, Nomoto controller, SignalK adapter, factory
   core/            Config loading, simulation runner, data types
   environment/     Wind, wave, and current models
   physics/         Aerodynamics, hydrodynamics, hydrostatics, wave forces, integration
@@ -176,9 +281,12 @@ src/sailsim/
   viewer/          Interactive matplotlib playback viewer
   cli.py           Command-line interface
 
+completions/       Bash and Zsh tab completion scripts
+
 configs/
-  scenarios/       TOML scenario definitions
-  yachts/          Yacht parameter files
+  autopilots/      Autopilot profile TOMLs (Nomoto tunings, SignalK)
+  scenarios/       TOML scenario definitions (environment, timing, maneuvers)
+  yachts/          Yacht parameter files (hull, rig, appendages)
 
 tests/
   unit/            Unit tests for individual modules

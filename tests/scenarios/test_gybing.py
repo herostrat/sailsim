@@ -2,8 +2,8 @@
 
 import numpy as np
 
-from sailsim.autopilot.pid import PIDAutopilot
-from sailsim.core.config import load_scenario
+from sailsim.autopilot.nomoto import NomotoAutopilot
+from sailsim.core.config import load_scenario, load_yacht
 from sailsim.core.runner import run_scenario
 from sailsim.recording.analysis import evaluate_maneuver
 
@@ -11,11 +11,14 @@ from sailsim.recording.analysis import evaluate_maneuver
 def test_gybe_starboard_to_port():
     """Boat should complete a gybe from starboard to port."""
     config = load_scenario("configs/scenarios/gybe_starboard_to_port.toml")
-    autopilot = PIDAutopilot(
-        kp=config.autopilot.kp,
-        ki=config.autopilot.ki,
-        kd=config.autopilot.kd,
-        auto_sail_trim=config.autopilot.auto_sail_trim,
+    config.yacht = load_yacht("default")
+
+    autopilot = NomotoAutopilot(
+        yacht=config.yacht,
+        omega_n=0.6,
+        zeta=0.7,
+        rudder_rate_max=np.radians(10),
+        auto_sail_trim=True,
     )
     recorder = run_scenario(config, autopilot)
 

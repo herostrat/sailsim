@@ -78,7 +78,9 @@ class YachtParams:
     # Sail properties
     sail_area: float = 50.0  # total sail area (main + genoa) [m^2]
     mast_height: float = 12.0  # center of effort height [m]
-    sail_ce_x: float = 0.3  # sail CE longitudinal offset from CO [m]
+    # Sail CE longitudinal position [m]. Negative = aft of CO.
+    # Weather helm requires CE aft of keel CLR (sail_ce_x < keel_x).
+    sail_ce_x: float = -0.20
 
     # Rudder properties
     rudder_area: float = 0.25  # rudder planform area [m^2]
@@ -87,7 +89,9 @@ class YachtParams:
 
     # Keel properties
     keel_area: float = 1.5  # keel lateral area [m^2]
-    keel_x: float = -0.3  # keel CLR position from CO [m]
+    # Keel CLR longitudinal position [m]. Positive = forward of CO.
+    # Weather helm requires CLR forward of sail CE (keel_x > sail_ce_x).
+    keel_x: float = 0.15
 
 
 class Yacht3DOF:

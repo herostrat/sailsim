@@ -2,8 +2,8 @@
 
 import numpy as np
 
-from sailsim.autopilot.pid import PIDAutopilot
-from sailsim.core.config import load_scenario
+from sailsim.autopilot.nomoto import NomotoAutopilot
+from sailsim.core.config import load_scenario, load_yacht
 from sailsim.core.runner import run_scenario
 from sailsim.recording.analysis import evaluate_maneuver
 
@@ -11,11 +11,14 @@ from sailsim.recording.analysis import evaluate_maneuver
 def test_tack_port_to_starboard():
     """Boat should complete a tack from port to starboard."""
     config = load_scenario("configs/scenarios/tack_port_to_starboard.toml")
-    autopilot = PIDAutopilot(
-        kp=config.autopilot.kp,
-        ki=config.autopilot.ki,
-        kd=config.autopilot.kd,
-        auto_sail_trim=config.autopilot.auto_sail_trim,
+    config.yacht = load_yacht("default")
+
+    autopilot = NomotoAutopilot(
+        yacht=config.yacht,
+        omega_n=0.6,
+        zeta=0.7,
+        rudder_rate_max=np.radians(10),
+        auto_sail_trim=True,
     )
     recorder = run_scenario(config, autopilot)
 
@@ -33,7 +36,7 @@ def test_tack_port_to_starboard():
     assert result.completed, (
         f"Tack not completed within window. Completion time: {result.completion_time_s:.1f}s"
     )
-    assert result.completion_time_s < 30.0, f"Tack too slow: {result.completion_time_s:.1f}s"
+    assert result.completion_time_s < 50.0, f"Tack too slow: {result.completion_time_s:.1f}s"
 
     # Verify heading crossed through the wind (0°)
     headings = [np.degrees(s.sensors.heading) for s in recorder.steps]

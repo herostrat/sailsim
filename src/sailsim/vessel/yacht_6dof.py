@@ -82,7 +82,9 @@ class YachtParams6DOF:
     # Sail properties
     sail_area: float = 50.0
     mast_height: float = 12.0
-    sail_ce_x: float = 0.3
+    # Sail CE longitudinal position [m]. Negative = aft of CO.
+    # Weather helm requires CE aft of keel CLR (sail_ce_x < keel_x).
+    sail_ce_x: float = -0.20
     sail_ce_z: float = 5.0  # CE height above WL [m]
 
     # Rudder properties
@@ -93,7 +95,9 @@ class YachtParams6DOF:
 
     # Keel properties
     keel_area: float = 1.5
-    keel_x: float = -0.3
+    # Keel CLR longitudinal position [m]. Positive = forward of CO.
+    # Weather helm requires CLR forward of sail CE (keel_x > sail_ce_x).
+    keel_x: float = 0.15
     keel_z: float = 1.5  # keel CLR depth below WL [m]
 
     # Hydrostatic

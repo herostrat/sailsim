@@ -1,10 +1,7 @@
-name = "rough_6dof"
+name = "rough_seas"
 duration_s = 120.0
 dt = 0.05
-
-[yacht]
-profile = "default"
-dof = 6
+target_heading = 0.0
 
 [wind]
 speed = 8.0
@@ -27,13 +24,6 @@ seed = 42
 
 [initial_state]
 u = 2.0
-
-[autopilot]
-target_heading = 0.0
-kp = 1.0
-ki = 0.05
-kd = 2.0
-auto_sail_trim = true
 
 [quality_gates]
 max_heading_deviation_deg = 30.0

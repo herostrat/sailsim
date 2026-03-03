@@ -163,3 +163,45 @@ def test_backward_compat_no_waves_or_target():
     for step in loaded.steps:
         assert step.waves is None
         assert step.target_heading is None
+
+
+def test_roundtrip_with_rudder_torque():
+    """JSON roundtrip preserves rudder_torque."""
+    rec = Recorder()
+    for i in range(3):
+        t = i * 0.1
+        state = VesselState(
+            eta=np.array([t, 0.0, 0.0, 0.0, 0.0, 0.0]),
+            nu=np.array([2.0, 0.0, 0.0, 0.0, 0.0, 0.0]),
+        )
+        sensors = SensorData(heading=0.0, speed_through_water=2.0)
+        control = ControlCommand()
+        wind = WindState(speed=5.0, direction=1.0)
+        forces = ForceData(
+            sail=np.array([100.0, -50.0, -20.0]),
+            rudder=np.array([-5.0, 30.0, -80.0]),
+            keel=np.array([-10.0, 100.0, -30.0]),
+        )
+        rec.record(t, state, sensors, control, wind, forces=forces, rudder_torque=-2.4 * i)
+
+    with tempfile.TemporaryDirectory() as tmpdir:
+        path = Path(tmpdir) / "test.json"
+        rec.to_json(path)
+        loaded = Recorder.from_json(path)
+
+    for orig, load in zip(rec.steps, loaded.steps, strict=False):
+        assert load.rudder_torque is not None or orig.rudder_torque == 0.0
+        assert abs((load.rudder_torque or 0.0) - (orig.rudder_torque or 0.0)) < 1e-10
+
+
+def test_backward_compat_no_rudder_torque():
+    """Loading JSON without rudder_torque should give None."""
+    rec = _make_recorder_without_forces()
+
+    with tempfile.TemporaryDirectory() as tmpdir:
+        path = Path(tmpdir) / "test.json"
+        rec.to_json(path)
+        loaded = Recorder.from_json(path)
+
+    for step in loaded.steps:
+        assert step.rudder_torque is None

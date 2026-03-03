@@ -189,7 +189,8 @@ def sail_forces_3dof(
     else:
         Y_sail = heeling  # push to starboard
 
-    # Yaw moment from sail force at center of effort
+    # Yaw moment: sail side force * lever arm.
+    # Weather helm: sail_ce_x < 0 (CE aft) → N_sail opposes leeward drift.
     N_sail = Y_sail * sail_ce_x
 
     return np.array([X_sail, Y_sail, N_sail])

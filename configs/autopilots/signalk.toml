@@ -1,0 +1,3 @@
+# External autopilot via SignalK server
+type = "signalk"
+signalk_url = "http://localhost:3000"
