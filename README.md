@@ -72,17 +72,17 @@ Every simulation combines three independent inputs:
 
 | Input | Flag | Default | What it defines |
 |-------|------|---------|-----------------|
-| **Scenario** | `--scenario` | built-in default | Environment, timing, maneuvers, quality gates |
+| **Scenario** | `--scenario` | `calm_heading_hold` | Environment, timing, maneuvers, quality gates |
 | **Yacht** | `--yacht` | `default` | Hull shape, mass, rig, appendages |
 | **Autopilot** | `--autopilot` | `heading_hold` | Controller type and tuning |
 
 ### Run a scenario
 
 ```bash
-sailsim --scenario configs/scenarios/calm_heading_hold.toml --yacht default --autopilot heading_hold
+sailsim --scenario calm_heading_hold --yacht default --autopilot heading_hold
 ```
 
-This runs the simulation, evaluates quality gates, and prints a pass/fail summary. Exit code 0 means all gates passed. `--yacht` and `--autopilot` can be omitted here since these are the defaults.
+This runs the simulation, evaluates quality gates, and prints a pass/fail summary. Exit code 0 means all gates passed. All three flags accept either a profile name (resolved from `configs/<type>/<name>.toml`) or a full TOML path. Since `default` and `heading_hold` are the defaults, this is equivalent to just `sailsim --scenario calm_heading_hold`.
 
 ### Mix and match
 
@@ -90,19 +90,19 @@ Yacht and autopilot are always separate from the scenario, so you can freely com
 
 ```bash
 # J24 hull with aggressive tack tuning
-sailsim --scenario configs/scenarios/tack_port_to_starboard.toml --yacht j24 --autopilot tack
+sailsim --scenario tack_port_to_starboard --yacht j24 --autopilot tack
 
 # Same scenario, different boat
-sailsim --scenario configs/scenarios/tack_port_to_starboard.toml --yacht swan45 --autopilot tack
+sailsim --scenario tack_port_to_starboard --yacht swan45 --autopilot tack
 
 # Custom autopilot from a TOML file
-sailsim --scenario configs/scenarios/calm_heading_hold.toml --autopilot /path/to/my_gains.toml
+sailsim --scenario calm_heading_hold --autopilot /path/to/my_gains.toml
 ```
 
 ### Use an external autopilot via SignalK
 
 ```bash
-sailsim --scenario configs/scenarios/calm_heading_hold.toml --autopilot signalk
+sailsim --scenario calm_heading_hold --autopilot signalk
 ```
 
 This connects to a SignalK server (default `http://localhost:3000`), publishes sensor data each time step, and reads the rudder angle back. Your autopilot algorithm runs externally and communicates through the SignalK API.
@@ -110,7 +110,7 @@ This connects to a SignalK server (default `http://localhost:3000`), publishes s
 ### Run and view interactively
 
 ```bash
-sailsim --scenario configs/scenarios/rough_seas.toml --yacht default --autopilot heading_hold --view
+sailsim --scenario rough_seas --view
 ```
 
 Opens the playback viewer after the simulation completes. Use the timeline slider to scrub through the recording.
@@ -119,8 +119,8 @@ Opens the playback viewer after the simulation completes. Use the timeline slide
 
 ```bash
 # Save two runs with different tunings
-sailsim --scenario configs/scenarios/compare_conservative.toml --autopilot heading_hold --save-json /tmp/conservative.json
-sailsim --scenario configs/scenarios/compare_aggressive.toml --autopilot tack --save-json /tmp/aggressive.json
+sailsim --scenario compare_conservative --save-json /tmp/conservative.json
+sailsim --scenario compare_aggressive --save-json /tmp/aggressive.json
 
 # Compare side-by-side in the viewer
 sailsim --view /tmp/conservative.json /tmp/aggressive.json
@@ -129,7 +129,7 @@ sailsim --view /tmp/conservative.json /tmp/aggressive.json
 ### Run a waypoint route
 
 ```bash
-sailsim --scenario configs/scenarios/waypoint_triangle.toml --autopilot tack --save-json /tmp/triangle.json --view
+sailsim --scenario waypoint_triangle --autopilot tack --save-json /tmp/triangle.json --view
 ```
 
 Waypoints are defined in the scenario TOML:
@@ -149,14 +149,14 @@ tolerance = 15.0
 ### Export telemetry to CSV
 
 ```bash
-sailsim --scenario configs/scenarios/calm_heading_hold.toml --output telemetry.csv
+sailsim --scenario calm_heading_hold --output telemetry.csv
 ```
 
 ### CLI reference
 
 | Flag | Description |
 |------|-------------|
-| `--scenario PATH` | Scenario TOML file (environment, timing, maneuvers) |
+| `--scenario NAME\|PATH` | Scenario profile name or TOML path (default: `calm_heading_hold`) |
 | `--yacht NAME\|PATH` | Yacht profile name or TOML path (default: `default`) |
 | `--autopilot NAME\|PATH` | Autopilot profile name or TOML path (default: `heading_hold`) |
 | `--view [JSON...]` | Launch viewer. No args: run + view. With args: load and compare JSON files |
@@ -183,7 +183,7 @@ source /path/to/sailing_autopilot_simultator/completions/sailsim.zsh
 Or copy `completions/sailsim.zsh` to a directory in your `$fpath` as `_sailsim`.
 
 Completion works for:
-- `--scenario` — TOML files in `configs/scenarios/`
+- `--scenario` — profile names from `configs/scenarios/` + TOML file paths
 - `--yacht` — profile names from `configs/yachts/` + TOML file paths
 - `--autopilot` — profile names from `configs/autopilots/` + TOML file paths
 - `--view` — JSON files
