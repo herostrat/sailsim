@@ -149,9 +149,7 @@ class PypilotAutopilot:
         # Enable autopilot and set mode via JSON-TCP
         self._json_send("ap.enabled=true\n")
         self._json_send(f'ap.mode="{self.mode}"\n')
-        self._json_send(
-            f"ap.heading_command={math.degrees(self._target_heading):.4f}\n"
-        )
+        self._json_send(f"ap.heading_command={math.degrees(self._target_heading):.4f}\n")
         # Watch servo command for rudder feedback
         self._json_send('watch={"servo.command":true}\n')
 
@@ -184,16 +182,13 @@ class PypilotAutopilot:
         cog_deg = math.degrees(sensors.course_over_ground) % 360.0
         sentences.append(
             _build_nmea(
-                f"GPRMC,120000,A,0000.0,N,00000.0,E,"
-                f"{sog_knots:.1f},{cog_deg:.1f},010126,,,A"
+                f"GPRMC,120000,A,0000.0,N,00000.0,E,{sog_knots:.1f},{cog_deg:.1f},010126,,,A"
             )
         )
 
         # Speed through water: VHW
         stw_knots = _ms_to_knots(sensors.speed_through_water)
-        sentences.append(
-            _build_nmea(f"VWVHW,,,{heading_deg:.1f},M,{stw_knots:.1f},N,,K")
-        )
+        sentences.append(_build_nmea(f"VWVHW,,,{heading_deg:.1f},M,{stw_knots:.1f},N,,K"))
 
         self._nmea_sock.sendall(b"".join(sentences))
 

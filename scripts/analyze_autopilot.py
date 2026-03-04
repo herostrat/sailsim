@@ -178,8 +178,10 @@ def cmd_full(args: argparse.Namespace) -> None:
         speeds = [s.sensors.speed_through_water for s in rec.steps]
         U = float(np.mean(speeds)) if speeds else 3.0
     result = analyze_at_speed(
-        config.yacht, U,
-        ap_config.omega_n, ap_config.zeta,
+        config.yacht,
+        U,
+        ap_config.omega_n,
+        ap_config.zeta,
     )
     print("\n" + summarize_linear(result))
 
@@ -200,15 +202,11 @@ def main() -> None:
     # --- analytical ---
     p_ana = sub.add_parser("analytical", help="Model-based analysis")
     p_ana.add_argument("--yacht", default="default", help="Yacht config name/path")
-    p_ana.add_argument("--autopilot", default="heading_hold",
-                       help="Autopilot config name/path")
+    p_ana.add_argument("--autopilot", default="heading_hold", help="Autopilot config name/path")
     p_ana.add_argument("--speed", type=float, default=3.0, help="Speed [m/s]")
-    p_ana.add_argument("--omega-n", type=float, default=None,
-                       help="Natural frequency override")
-    p_ana.add_argument("--zeta", type=float, default=None,
-                       help="Damping ratio override")
-    p_ana.add_argument("--sweep", action="store_true",
-                       help="Speed sweep instead of single point")
+    p_ana.add_argument("--omega-n", type=float, default=None, help="Natural frequency override")
+    p_ana.add_argument("--zeta", type=float, default=None, help="Damping ratio override")
+    p_ana.add_argument("--sweep", action="store_true", help="Speed sweep instead of single point")
     p_ana.add_argument("--save-dir", help="Directory to save plots")
     p_ana.add_argument("--no-plot", action="store_true", help="Skip plots")
     p_ana.set_defaults(func=cmd_analytical)
@@ -216,18 +214,15 @@ def main() -> None:
     # --- empirical ---
     p_emp = sub.add_parser("empirical", help="Data-driven analysis")
     p_emp.add_argument("files", nargs="+", help="JSON recording files")
-    p_emp.add_argument("--rate-limit", type=float, default=5.0,
-                       help="Rudder rate limit [deg/s]")
+    p_emp.add_argument("--rate-limit", type=float, default=5.0, help="Rudder rate limit [deg/s]")
     p_emp.add_argument("--save-dir", help="Directory to save plots")
     p_emp.add_argument("--no-plot", action="store_true", help="Skip plots")
     p_emp.set_defaults(func=cmd_empirical)
 
     # --- full ---
     p_full = sub.add_parser("full", help="Simulate + analyse")
-    p_full.add_argument("--scenario", default="calm_heading_hold",
-                        help="Scenario name/path")
-    p_full.add_argument("--autopilot", default="heading_hold",
-                        help="Autopilot config name/path")
+    p_full.add_argument("--scenario", default="calm_heading_hold", help="Scenario name/path")
+    p_full.add_argument("--autopilot", default="heading_hold", help="Autopilot config name/path")
     p_full.add_argument("--save-dir", help="Directory to save output")
     p_full.set_defaults(func=cmd_full)
 

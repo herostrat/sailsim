@@ -21,9 +21,7 @@ def test_benchmark(entry, pypilot_service, tmp_path):
     config = load_scenario(entry.scenario)
     config.yacht = load_yacht(entry.yacht)
     if entry.gate_overrides:
-        config.quality_gates = apply_gate_overrides(
-            config.quality_gates, entry.gate_overrides
-        )
+        config.quality_gates = apply_gate_overrides(config.quality_gates, entry.gate_overrides)
 
     ap_config = load_autopilot(entry.autopilot)
     autopilot = create_autopilot(ap_config, yacht=config.yacht)

@@ -57,6 +57,7 @@ def _on_course_sensors(heading: float = 0.0, stw: float = 2.0) -> SensorData:
 
 # ---- M' matrix consistency ----
 
+
 class TestSwayYawMassMatrix:
     """M' used in Nomoto estimation must match the sway-yaw sub-block
     of the full mass_matrix_3dof."""
@@ -64,38 +65,53 @@ class TestSwayYawMassMatrix:
     def test_sway_yaw_mass_matrix(self):
         y = _default_yacht()
         M_full = mass_matrix_3dof(
-            m=y.mass, Iz=y.Iz, xg=y.xg,
-            X_udot=y.X_udot, Y_vdot=y.Y_vdot, Y_rdot=y.Y_rdot,
-            N_vdot=y.N_vdot, N_rdot=y.N_rdot,
+            m=y.mass,
+            Iz=y.Iz,
+            xg=y.xg,
+            X_udot=y.X_udot,
+            Y_vdot=y.Y_vdot,
+            Y_rdot=y.Y_rdot,
+            N_vdot=y.N_vdot,
+            N_rdot=y.N_rdot,
         )
         # Sway-yaw sub-block = rows/cols [1,2]
         M_sub = M_full[1:, 1:]
 
         # M' from estimate_nomoto_params (reconstruct)
-        M_prime = np.array([
-            [y.mass - y.Y_vdot, y.mass * y.xg - y.Y_rdot],
-            [y.mass * y.xg - y.N_vdot, y.Iz - y.N_rdot],
-        ])
+        M_prime = np.array(
+            [
+                [y.mass - y.Y_vdot, y.mass * y.xg - y.Y_rdot],
+                [y.mass * y.xg - y.N_vdot, y.Iz - y.N_rdot],
+            ]
+        )
         np.testing.assert_allclose(M_prime, M_sub)
 
     def test_mass_matrix_consistency_j24(self):
         """M' == mass_matrix_3dof[1:,1:] also for J/24."""
         y = _j24_yacht()
         M_full = mass_matrix_3dof(
-            m=y.mass, Iz=y.Iz, xg=y.xg,
-            X_udot=y.X_udot, Y_vdot=y.Y_vdot, Y_rdot=y.Y_rdot,
-            N_vdot=y.N_vdot, N_rdot=y.N_rdot,
+            m=y.mass,
+            Iz=y.Iz,
+            xg=y.xg,
+            X_udot=y.X_udot,
+            Y_vdot=y.Y_vdot,
+            Y_rdot=y.Y_rdot,
+            N_vdot=y.N_vdot,
+            N_rdot=y.N_rdot,
         )
         M_sub = M_full[1:, 1:]
 
-        M_prime = np.array([
-            [y.mass - y.Y_vdot, y.mass * y.xg - y.Y_rdot],
-            [y.mass * y.xg - y.N_vdot, y.Iz - y.N_rdot],
-        ])
+        M_prime = np.array(
+            [
+                [y.mass - y.Y_vdot, y.mass * y.xg - y.Y_rdot],
+                [y.mass * y.xg - y.N_vdot, y.Iz - y.N_rdot],
+            ]
+        )
         np.testing.assert_allclose(M_prime, M_sub)
 
 
 # ---- Nomoto parameter estimation ----
+
 
 class TestNomotoParams:
     def test_nomoto_params_default_yacht(self):
@@ -133,6 +149,7 @@ class TestNomotoParams:
 
 # ---- Pole placement formula ----
 
+
 class TestPolePlacement:
     def test_pole_placement_formula(self):
         """Closed-loop poles match desired omega_n and zeta."""
@@ -152,6 +169,7 @@ class TestPolePlacement:
 
 
 # ---- NomotoAutopilot controller ----
+
 
 class TestNomotoAutopilot:
     def test_zero_error_zero_output(self):

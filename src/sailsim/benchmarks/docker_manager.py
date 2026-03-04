@@ -30,8 +30,14 @@ class DockerService:
         logger.info("Starting Docker service %s ...", self.service)
         subprocess.run(
             [
-                "docker", "compose", "-f", self.compose_file,
-                "up", "-d", "--build", self.service,
+                "docker",
+                "compose",
+                "-f",
+                self.compose_file,
+                "up",
+                "-d",
+                "--build",
+                self.service,
             ],
             check=True,
             capture_output=True,
@@ -49,8 +55,12 @@ class DockerService:
         logger.info("Stopping Docker service %s ...", self.service)
         subprocess.run(
             [
-                "docker", "compose", "-f", self.compose_file,
-                "down", self.service,
+                "docker",
+                "compose",
+                "-f",
+                self.compose_file,
+                "down",
+                self.service,
             ],
             capture_output=True,
             text=True,

@@ -33,8 +33,7 @@ def summarize_linear(result: LinearAnalysisResult) -> str:
         wn = result.poles.natural_frequencies[i]
         if np.imag(p) != 0:
             lines.append(
-                f"  {np.real(p):+.4f} +/- {abs(np.imag(p)):.4f}j "
-                f"(zeta={z:.3f}, wn={wn:.3f})"
+                f"  {np.real(p):+.4f} +/- {abs(np.imag(p)):.4f}j (zeta={z:.3f}, wn={wn:.3f})"
             )
         else:
             lines.append(f"  {np.real(p):+.4f} (zeta={z:.3f}, wn={wn:.3f})")
@@ -49,8 +48,7 @@ def summarize_speed_sweep(sweep: SpeedSweepResult) -> str:
     lines = [
         "Speed Sweep Analysis",
         "=" * 75,
-        f"{'U [m/s]':>8} {'K':>8} {'Kp':>8} {'Kd':>8} "
-        f"{'GM [dB]':>8} {'PM [deg]':>8} {'Stable':>7}",
+        f"{'U [m/s]':>8} {'K':>8} {'Kp':>8} {'Kd':>8} {'GM [dB]':>8} {'PM [deg]':>8} {'Stable':>7}",
         "-" * 75,
     ]
 
@@ -106,13 +104,15 @@ def summarize_empirical(
         lines.append("\nNo step responses detected.")
 
     if rudder_analysis is not None:
-        lines.extend([
-            "",
-            "Rudder Activity:",
-            f"  RMS:             {rudder_analysis.total_rms_deg:.2f} deg",
-            f"  Dominant freq:   {rudder_analysis.dominant_freq_hz:.4f} Hz",
-            f"  At position limit: {rudder_analysis.fraction_at_limit * 100:.1f}%",
-            f"  At rate limit:     {rudder_analysis.fraction_rate_limited * 100:.1f}%",
-        ])
+        lines.extend(
+            [
+                "",
+                "Rudder Activity:",
+                f"  RMS:             {rudder_analysis.total_rms_deg:.2f} deg",
+                f"  Dominant freq:   {rudder_analysis.dominant_freq_hz:.4f} Hz",
+                f"  At position limit: {rudder_analysis.fraction_at_limit * 100:.1f}%",
+                f"  At rate limit:     {rudder_analysis.fraction_rate_limited * 100:.1f}%",
+            ]
+        )
 
     return "\n".join(lines)

@@ -105,14 +105,14 @@ def estimate(d: YachtDimensions) -> dict:
     k_yy = 0.27 * L
     k_zz = 0.25 * L
 
-    Ix = m * k_xx ** 2
-    Iy = m * k_yy ** 2
-    Iz = m * k_zz ** 2
+    Ix = m * k_xx**2
+    Iy = m * k_yy**2
+    Iz = m * k_zz**2
 
     # Parallel axis correction for ballast keel
     m_ballast = m * d.ballast_fraction
     d_keel = d.keel_span * 0.7  # effective depth of ballast bulb
-    Ix += m_ballast * d_keel ** 2
+    Ix += m_ballast * d_keel**2
 
     xg = 0.0
     zg = 0.15 * d.T_canoe  # conservative
@@ -125,10 +125,10 @@ def estimate(d: YachtDimensions) -> dict:
     N_vdot_p = -S * (1.1 * B / L - 0.041 * B / T)
     N_rdot_p = -S * (1 / 12 + 0.017 * d.Cb * B / T - 0.33 * B / L)
 
-    Y_vdot = Y_vdot_p * 0.5 * rho * L ** 3
-    Y_rdot = Y_rdot_p * 0.5 * rho * L ** 4
-    N_vdot = N_vdot_p * 0.5 * rho * L ** 4
-    N_rdot = N_rdot_p * 0.5 * rho * L ** 5
+    Y_vdot = Y_vdot_p * 0.5 * rho * L**3
+    Y_rdot = Y_rdot_p * 0.5 * rho * L**4
+    N_vdot = N_vdot_p * 0.5 * rho * L**4
+    N_rdot = N_rdot_p * 0.5 * rho * L**5
 
     # Hull fraction correction for added mass.
     # Clarke with T_total overestimates sway/yaw added mass because the keel
@@ -152,7 +152,7 @@ def estimate(d: YachtDimensions) -> dict:
     N_vdot = max(N_vdot, -max_cross_mass)
 
     # Surge added mass (Soeding)
-    X_udot = -2.7 * rho * nabla ** (5 / 3) / L ** 2
+    X_udot = -2.7 * rho * nabla ** (5 / 3) / L**2
     # Clamp: should be between -3% and -15% of mass
     X_udot = max(X_udot, -0.15 * m)
     X_udot = min(X_udot, -0.03 * m)
@@ -170,10 +170,10 @@ def estimate(d: YachtDimensions) -> dict:
     N_v_p = -S * (0.5 + 2.4 * T / L)
     N_r_p = -S * (0.25 + 0.039 * B / T - 0.56 * B / L)
 
-    Yv = Y_v_p * 0.5 * rho * L ** 2 * U
-    Yr = Y_r_p * 0.5 * rho * L ** 3 * U
-    Nv = N_v_p * 0.5 * rho * L ** 3 * U
-    Nr = N_r_p * 0.5 * rho * L ** 4 * U
+    Yv = Y_v_p * 0.5 * rho * L**2 * U
+    Yr = Y_r_p * 0.5 * rho * L**3 * U
+    Nv = N_v_p * 0.5 * rho * L**3 * U
+    Nr = N_r_p * 0.5 * rho * L**4 * U
 
     # ── Hull Fraction Correction ───────────────────────
     # Clarke formulas with T_total include the keel in the "hull" derivatives.
@@ -321,7 +321,7 @@ def _estimate_GM_L(L, B, T, m, Cwp) -> float:
     """Estimate longitudinal metacentric height [m]."""
     rho = RHO_SW
     nabla = m / rho
-    IL = Cwp * L ** 3 * B / 12.0
+    IL = Cwp * L**3 * B / 12.0
     BM_L = IL / nabla if nabla > 0 else 10.0
     KB = 0.58 * T
     KG = T * 0.6
@@ -422,68 +422,158 @@ YACHTS = [
     YachtDimensions(
         name="Mini 6.50",
         description="Production Class Mini 6.50 — ultra-light offshore racer",
-        LOA=6.50, LWL=5.80, BWL=3.00, T_canoe=0.40, T_total=2.00,
-        mass=950, Cb=0.18, Cp=0.52,
-        sail_area=40.0, mast_height=11.0, sail_ce_x=-0.15,
-        keel_area=0.45, keel_x=0.10, rudder_area=0.12,
-        rudder_x=-2.8, rudder_cp_offset=0.05,
-        ballast_fraction=0.42, Cwp=0.62, U_design=3.5,
-        zeta_roll=0.06, GM_T=0.7, GM_L=8.0,
+        LOA=6.50,
+        LWL=5.80,
+        BWL=3.00,
+        T_canoe=0.40,
+        T_total=2.00,
+        mass=950,
+        Cb=0.18,
+        Cp=0.52,
+        sail_area=40.0,
+        mast_height=11.0,
+        sail_ce_x=-0.15,
+        keel_area=0.45,
+        keel_x=0.10,
+        rudder_area=0.12,
+        rudder_x=-2.8,
+        rudder_cp_offset=0.05,
+        ballast_fraction=0.42,
+        Cwp=0.62,
+        U_design=3.5,
+        zeta_roll=0.06,
+        GM_T=0.7,
+        GM_L=8.0,
     ),
     YachtDimensions(
         name="J/24",
         description="J/24 one-design racing keelboat (7.3m, 1406 kg)",
-        LOA=7.32, LWL=6.10, BWL=2.72, T_canoe=0.45, T_total=1.22,
-        mass=1406, Cb=0.24, Cp=0.54,
-        sail_area=32.0, mast_height=8.5, sail_ce_x=-0.15,
-        keel_area=0.50, keel_x=0.10, rudder_area=0.10,
-        rudder_x=-2.9, rudder_cp_offset=0.06,
-        ballast_fraction=0.31, Cwp=0.65, U_design=2.8,
-        zeta_roll=0.07, GM_T=0.8, GM_L=10.0,
+        LOA=7.32,
+        LWL=6.10,
+        BWL=2.72,
+        T_canoe=0.45,
+        T_total=1.22,
+        mass=1406,
+        Cb=0.24,
+        Cp=0.54,
+        sail_area=32.0,
+        mast_height=8.5,
+        sail_ce_x=-0.15,
+        keel_area=0.50,
+        keel_x=0.10,
+        rudder_area=0.10,
+        rudder_x=-2.9,
+        rudder_cp_offset=0.06,
+        ballast_fraction=0.31,
+        Cwp=0.65,
+        U_design=2.8,
+        zeta_roll=0.07,
+        GM_T=0.8,
+        GM_L=10.0,
     ),
     YachtDimensions(
         name="Dehler 34",
         description="Dehler 34 cruiser/racer (10.7m, 5950 kg, L-keel with bulb)",
-        LOA=10.70, LWL=9.60, BWL=3.60, T_canoe=0.60, T_total=1.95,
-        mass=5950, Cb=0.28, Cp=0.55,
-        sail_area=65.0, mast_height=15.0, sail_ce_x=-0.20,
-        keel_area=1.20, keel_x=0.15, rudder_area=0.25,
-        rudder_x=-4.5, rudder_cp_offset=0.08,
-        ballast_fraction=0.35, Cwp=0.68, U_design=3.0,
-        zeta_roll=0.08, GM_T=1.1, GM_L=14.0,
+        LOA=10.70,
+        LWL=9.60,
+        BWL=3.60,
+        T_canoe=0.60,
+        T_total=1.95,
+        mass=5950,
+        Cb=0.28,
+        Cp=0.55,
+        sail_area=65.0,
+        mast_height=15.0,
+        sail_ce_x=-0.20,
+        keel_area=1.20,
+        keel_x=0.15,
+        rudder_area=0.25,
+        rudder_x=-4.5,
+        rudder_cp_offset=0.08,
+        ballast_fraction=0.35,
+        Cwp=0.68,
+        U_design=3.0,
+        zeta_roll=0.08,
+        GM_T=1.1,
+        GM_L=14.0,
     ),
     YachtDimensions(
         name="Swan 45",
         description="Nautor Swan 45 performance cruiser (13.8m, 9850 kg)",
-        LOA=13.82, LWL=12.04, BWL=3.86, T_canoe=0.70, T_total=2.80,
-        mass=9850, Cb=0.30, Cp=0.56,
-        sail_area=113.0, mast_height=18.5, sail_ce_x=-0.25,
-        keel_area=2.00, keel_x=0.20, rudder_area=0.35,
-        rudder_x=-5.5, rudder_cp_offset=0.10,
-        ballast_fraction=0.40, Cwp=0.68, U_design=3.5,
-        zeta_roll=0.09, GM_T=1.3, GM_L=18.0,
+        LOA=13.82,
+        LWL=12.04,
+        BWL=3.86,
+        T_canoe=0.70,
+        T_total=2.80,
+        mass=9850,
+        Cb=0.30,
+        Cp=0.56,
+        sail_area=113.0,
+        mast_height=18.5,
+        sail_ce_x=-0.25,
+        keel_area=2.00,
+        keel_x=0.20,
+        rudder_area=0.35,
+        rudder_x=-5.5,
+        rudder_cp_offset=0.10,
+        ballast_fraction=0.40,
+        Cwp=0.68,
+        U_design=3.5,
+        zeta_roll=0.09,
+        GM_T=1.3,
+        GM_L=18.0,
     ),
     YachtDimensions(
         name="Hallberg-Rassy 62",
         description="Hallberg-Rassy 62 bluewater cruiser (18.9m, 33000 kg)",
-        LOA=18.88, LWL=15.30, BWL=5.15, T_canoe=1.00, T_total=2.50,
-        mass=33000, Cb=0.38, Cp=0.58,
-        sail_area=176.0, mast_height=24.5, sail_ce_x=-0.30,
-        keel_area=3.50, keel_x=0.25, rudder_area=0.55,
-        rudder_x=-7.0, rudder_cp_offset=0.12,
-        ballast_fraction=0.33, Cwp=0.72, U_design=3.5,
-        zeta_roll=0.10, GM_T=1.6, GM_L=25.0,
+        LOA=18.88,
+        LWL=15.30,
+        BWL=5.15,
+        T_canoe=1.00,
+        T_total=2.50,
+        mass=33000,
+        Cb=0.38,
+        Cp=0.58,
+        sail_area=176.0,
+        mast_height=24.5,
+        sail_ce_x=-0.30,
+        keel_area=3.50,
+        keel_x=0.25,
+        rudder_area=0.55,
+        rudder_x=-7.0,
+        rudder_cp_offset=0.12,
+        ballast_fraction=0.33,
+        Cwp=0.72,
+        U_design=3.5,
+        zeta_roll=0.10,
+        GM_T=1.6,
+        GM_L=25.0,
     ),
     YachtDimensions(
         name="IMOCA 60",
         description="IMOCA 60 offshore racer (18.3m, 8500 kg, canting keel + foils)",
-        LOA=18.28, LWL=17.50, BWL=5.85, T_canoe=0.50, T_total=4.50,
-        mass=8500, Cb=0.16, Cp=0.51,
-        sail_area=275.0, mast_height=28.0, sail_ce_x=-0.35,
-        keel_area=1.50, keel_x=0.30, rudder_area=0.45,
-        rudder_x=-8.5, rudder_cp_offset=0.10,
-        ballast_fraction=0.36, Cwp=0.60, U_design=5.0,
-        zeta_roll=0.06, GM_T=1.0, GM_L=20.0,
+        LOA=18.28,
+        LWL=17.50,
+        BWL=5.85,
+        T_canoe=0.50,
+        T_total=4.50,
+        mass=8500,
+        Cb=0.16,
+        Cp=0.51,
+        sail_area=275.0,
+        mast_height=28.0,
+        sail_ce_x=-0.35,
+        keel_area=1.50,
+        keel_x=0.30,
+        rudder_area=0.45,
+        rudder_x=-8.5,
+        rudder_cp_offset=0.10,
+        ballast_fraction=0.36,
+        Cwp=0.60,
+        U_design=5.0,
+        zeta_roll=0.06,
+        GM_T=1.0,
+        GM_L=20.0,
     ),
 ]
 
@@ -505,8 +595,7 @@ def main() -> None:
 
         # Print summary to stdout
         r = yacht.results
-        print(f"  {yacht.name}: mass={r['mass']}, Iz={r['Iz']}, "
-              f"Nr={r['Nr']}, GM_T={r['GM_T']}")
+        print(f"  {yacht.name}: mass={r['mass']}, Iz={r['Iz']}, Nr={r['Nr']}, GM_T={r['GM_T']}")
 
     # Also print full table for comparison
     print("\n── Comparison Table ──")
@@ -515,8 +604,22 @@ def main() -> None:
         header += f"  {y.name:>12s}"
     print(header)
     print("─" * len(header))
-    for key in ["mass", "Iz", "Ix", "X_udot", "Y_vdot", "N_rdot",
-                "Xu", "Yv", "Nr", "Nrr", "Kp", "GM_T", "GM_L", "Aw"]:
+    for key in [
+        "mass",
+        "Iz",
+        "Ix",
+        "X_udot",
+        "Y_vdot",
+        "N_rdot",
+        "Xu",
+        "Yv",
+        "Nr",
+        "Nrr",
+        "Kp",
+        "GM_T",
+        "GM_L",
+        "Aw",
+    ]:
         row = f"{key:<14s}"
         for y in YACHTS:
             v = y.results[key]

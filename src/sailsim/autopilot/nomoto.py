@@ -82,20 +82,24 @@ def estimate_nomoto_params(yacht: YachtConfig, U: float) -> NomotoParams:
     # Added mass (sway-yaw block, signs: M_A = -diag(derivatives)):
     #   [[-Y_vdot,  -Y_rdot],
     #    [-N_vdot,  -N_rdot]]
-    M = np.array([
-        [m - yacht.Y_vdot, m * xg - yacht.Y_rdot],
-        [m * xg - yacht.N_vdot, yacht.Iz - yacht.N_rdot],
-    ])
+    M = np.array(
+        [
+            [m - yacht.Y_vdot, m * xg - yacht.Y_rdot],
+            [m * xg - yacht.N_vdot, yacht.Iz - yacht.N_rdot],
+        ]
+    )
 
     # --- Damping sub-matrix D' (linearised at straight-line cruise) ---
     # D'[0,0] = -Yv
     # D'[0,1] = -(Yr - m*U)   (Coriolis linearisation: C_RB[1,2] = m*u)
     # D'[1,0] = -Nv
     # D'[1,1] = -Nr
-    D = np.array([
-        [-yacht.Yv, -(yacht.Yr - m * U)],
-        [-yacht.Nv, -yacht.Nr],
-    ])
+    D = np.array(
+        [
+            [-yacht.Yv, -(yacht.Yr - m * U)],
+            [-yacht.Nv, -yacht.Nr],
+        ]
+    )
 
     # --- Rudder force derivatives (linearised) ---
     u_eff = WAKE_FACTOR * U
@@ -135,7 +139,10 @@ def estimate_nomoto_params(yacht: YachtConfig, U: float) -> NomotoParams:
 
 
 def _compute_gains(
-    K: float, T: float, omega_n: float, zeta: float,
+    K: float,
+    T: float,
+    omega_n: float,
+    zeta: float,
 ) -> tuple[float, float, float]:
     """Pole-placement gains from Nomoto K, T and design specs.
 

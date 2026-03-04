@@ -113,6 +113,7 @@ class SignalKAutopilot:
             method="POST",
         )
         urllib.request.urlopen(req, timeout=self.timeout)
+
     @staticmethod
     def _build_delta(sensors: SensorData) -> dict[str, Any]:
         """Build a SignalK delta message from sensor data."""

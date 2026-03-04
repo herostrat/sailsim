@@ -24,6 +24,7 @@ from sailsim.recording.recorder import Recorder, TimeStep
 # Helpers to build synthetic recorders
 # -------------------------------------------------------------------
 
+
 def _make_recorder(
     duration: float = 60.0,
     dt: float = 0.1,
@@ -46,18 +47,20 @@ def _make_recorder(
         nu = np.zeros(6)
         nu[0] = speed
 
-        rec.steps.append(TimeStep(
-            t=ti,
-            state=VesselState(eta=eta.copy(), nu=nu.copy()),
-            sensors=SensorData(
-                heading=heading,
-                speed_through_water=speed,
-                yaw_rate=0.0,
-            ),
-            control=ControlCommand(rudder_angle=rudder),
-            wind=WindState(speed=5.0, direction=np.pi / 2),
-            target_heading=target,
-        ))
+        rec.steps.append(
+            TimeStep(
+                t=ti,
+                state=VesselState(eta=eta.copy(), nu=nu.copy()),
+                sensors=SensorData(
+                    heading=heading,
+                    speed_through_water=speed,
+                    yaw_rate=0.0,
+                ),
+                control=ControlCommand(rudder_angle=rudder),
+                wind=WindState(speed=5.0, direction=np.pi / 2),
+                target_heading=target,
+            )
+        )
 
     return rec
 
@@ -79,7 +82,7 @@ def _make_step_recorder(
         elapsed = t - step_time
         # Simple second-order response approximation
         wn = 1.8 / rise_time  # approximate for 10-90% rise time
-        zeta = -np.log(overshoot_frac) / np.sqrt(np.pi**2 + np.log(overshoot_frac)**2)
+        zeta = -np.log(overshoot_frac) / np.sqrt(np.pi**2 + np.log(overshoot_frac) ** 2)
         wd = wn * np.sqrt(1 - zeta**2)
         if wd > 0:
             envelope = np.exp(-zeta * wn * elapsed)
@@ -101,14 +104,18 @@ def _make_step_recorder(
         return np.radians(15.0) * np.exp(-elapsed / rise_time)
 
     return _make_recorder(
-        duration=duration, dt=dt,
-        heading_fn=heading_fn, rudder_fn=rudder_fn, target_fn=target_fn,
+        duration=duration,
+        dt=dt,
+        heading_fn=heading_fn,
+        rudder_fn=rudder_fn,
+        target_fn=target_fn,
     )
 
 
 # -------------------------------------------------------------------
 # Step response tests
 # -------------------------------------------------------------------
+
 
 class TestExtractStepResponses:
     def test_detects_step(self) -> None:
@@ -153,10 +160,12 @@ class TestExtractStepResponses:
 # Spectral estimation tests
 # -------------------------------------------------------------------
 
+
 class TestEstimateTransferFunction:
     def test_returns_spectral_estimate(self) -> None:
         rec = _make_recorder(
-            duration=30.0, dt=0.05,
+            duration=30.0,
+            dt=0.05,
             heading_fn=lambda t: 0.01 * np.sin(0.5 * t),
             rudder_fn=lambda t: 0.02 * np.sin(0.5 * t),
         )
@@ -172,7 +181,8 @@ class TestEstimateTransferFunction:
         freq = 0.5  # Hz
         omega = 2 * np.pi * freq
         rec = _make_recorder(
-            duration=60.0, dt=0.05,
+            duration=60.0,
+            dt=0.05,
             heading_fn=lambda t: 0.5 * np.sin(omega * t),
             rudder_fn=lambda t: 0.1 * np.sin(omega * t),
         )
@@ -192,6 +202,7 @@ class TestEstimateTransferFunction:
 # Rudder activity tests
 # -------------------------------------------------------------------
 
+
 class TestAnalyzeRudderActivity:
     def test_returns_analysis(self) -> None:
         rec = _make_recorder(
@@ -205,7 +216,8 @@ class TestAnalyzeRudderActivity:
         freq_hz = 0.3
         omega = 2 * np.pi * freq_hz
         rec = _make_recorder(
-            duration=60.0, dt=0.05,
+            duration=60.0,
+            dt=0.05,
             rudder_fn=lambda t: np.radians(10.0) * np.sin(omega * t),
         )
         result = analyze_rudder_activity(rec)
@@ -238,7 +250,8 @@ class TestAnalyzeRudderActivity:
         """Fast oscillations should trigger rate limiting."""
         # High frequency oscillation: rate = A*omega = 10*2pi*2 ≈ 125 deg/s
         rec = _make_recorder(
-            duration=30.0, dt=0.05,
+            duration=30.0,
+            dt=0.05,
             rudder_fn=lambda t: np.radians(10.0) * np.sin(2 * np.pi * 2.0 * t),
         )
         result = analyze_rudder_activity(rec, rate_limit_deg_s=5.0)

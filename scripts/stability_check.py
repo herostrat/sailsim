@@ -103,24 +103,28 @@ def time_series_snapshot(recorder, times_s: list[float]) -> list[dict]:
         step = recorder.steps[step_idx]
         s = step.state
         if np.any(np.isnan(s.eta)):
-            snapshots.append({
-                "t": step.t,
-                "speed_kn": float("nan"),
-                "heading_deg": float("nan"),
-                "roll_deg": float("nan"),
-                "pitch_deg": float("nan"),
-                "rudder_deg": float("nan"),
-            })
+            snapshots.append(
+                {
+                    "t": step.t,
+                    "speed_kn": float("nan"),
+                    "heading_deg": float("nan"),
+                    "roll_deg": float("nan"),
+                    "pitch_deg": float("nan"),
+                    "rudder_deg": float("nan"),
+                }
+            )
         else:
             speed_ms = float(np.sqrt(s.nu[0] ** 2 + s.nu[1] ** 2))
-            snapshots.append({
-                "t": step.t,
-                "speed_kn": speed_ms * 1.94384,
-                "heading_deg": float(np.degrees(s.eta[5])) % 360,
-                "roll_deg": float(np.degrees(s.eta[3])),
-                "pitch_deg": float(np.degrees(s.eta[4])),
-                "rudder_deg": float(np.degrees(step.control.rudder_angle)),
-            })
+            snapshots.append(
+                {
+                    "t": step.t,
+                    "speed_kn": speed_ms * 1.94384,
+                    "heading_deg": float(np.degrees(s.eta[5])) % 360,
+                    "roll_deg": float(np.degrees(s.eta[3])),
+                    "pitch_deg": float(np.degrees(s.eta[4])),
+                    "rudder_deg": float(np.degrees(step.control.rudder_angle)),
+                }
+            )
     return snapshots
 
 
@@ -238,7 +242,9 @@ def print_time_series(results: list[dict], dof: int):
         if not r["snapshots"]:
             continue
         print(f"\n  --- {r['profile']} ({r['status']}) ---")
-        print(f"  {'t[s]':>6} {'Speed[kn]':>10} {'Heading':>10} {'Roll':>10} {'Pitch':>10} {'Rudder':>10}")
+        print(
+            f"  {'t[s]':>6} {'Speed[kn]':>10} {'Heading':>10} {'Roll':>10} {'Pitch':>10} {'Rudder':>10}"
+        )
         for snap in r["snapshots"]:
             if np.isnan(snap["speed_kn"]):
                 print(f"  {snap['t']:>6.1f}      NaN        NaN        NaN        NaN        NaN")

@@ -35,6 +35,7 @@ def _import_plt() -> Any:
 # Model-based plots
 # ===================================================================
 
+
 def plot_bode(
     result: LinearAnalysisResult,
     which: str = "open_loop",
@@ -80,21 +81,30 @@ def plot_bode(
         m = result.margins
         if m.gain_crossover_freq > 0:
             ax_ph.axvline(
-                m.gain_crossover_freq, color="g", linestyle=":",
+                m.gain_crossover_freq,
+                color="g",
+                linestyle=":",
                 label=f"PM={m.phase_margin_deg:.1f} deg",
             )
             ax_ph.legend(loc="best", fontsize=8)
         if m.phase_crossover_freq > 0:
             ax_mag.axvline(
-                m.phase_crossover_freq, color="m", linestyle=":",
+                m.phase_crossover_freq,
+                color="m",
+                linestyle=":",
                 label=f"GM={m.gain_margin_db:.1f} dB",
             )
             ax_mag.legend(loc="best", fontsize=8)
         elif np.isinf(m.gain_margin_db):
             ax_mag.text(
-                0.98, 0.95, "GM = inf",
-                transform=ax_mag.transAxes, ha="right", va="top",
-                fontsize=9, color="m",
+                0.98,
+                0.95,
+                "GM = inf",
+                transform=ax_mag.transAxes,
+                ha="right",
+                va="top",
+                fontsize=9,
+                color="m",
                 bbox={"boxstyle": "round,pad=0.3", "fc": "white", "alpha": 0.8},
             )
 
@@ -138,8 +148,11 @@ def plot_nyquist(
             if neg_inv_N:
                 pts = np.array(neg_inv_N)
                 ax.plot(
-                    np.real(pts), np.imag(pts), "--",
-                    linewidth=1, label=f"-1/N (w={w_test})",
+                    np.real(pts),
+                    np.imag(pts),
+                    "--",
+                    linewidth=1,
+                    label=f"-1/N (w={w_test})",
                 )
 
     # Auto-zoom around the critical point (-1, 0).
@@ -197,7 +210,8 @@ def plot_root_locus(
         ax.plot(
             np.real(all_poles_arr[:, j]),
             np.imag(all_poles_arr[:, j]),
-            ".", markersize=2,
+            ".",
+            markersize=2,
         )
 
     # Mark nominal poles
@@ -223,36 +237,50 @@ def plot_pole_zero_map(
     ax.set_title(f"Pole-Zero Map (U={result.U:.1f} m/s)")
 
     poles = result.poles.poles
-    ax.plot(np.real(poles), np.imag(poles), "bx", markersize=12, markeredgewidth=2,
-            label="Poles")
+    ax.plot(np.real(poles), np.imag(poles), "bx", markersize=12, markeredgewidth=2, label="Poles")
 
     # Zeros of closed-loop
     zeros = np.roots(result.closed_loop_tf.num)
     if len(zeros) > 0:
-        ax.plot(np.real(zeros), np.imag(zeros), "ro", markersize=10,
-                fillstyle="none", markeredgewidth=2, label="Zeros")
+        ax.plot(
+            np.real(zeros),
+            np.imag(zeros),
+            "ro",
+            markersize=10,
+            fillstyle="none",
+            markeredgewidth=2,
+            label="Zeros",
+        )
 
     # Damping ratio lines
     wn_max = max(np.abs(poles).max() * 1.3, 1.0)
     for z in [0.2, 0.4, 0.6, 0.8]:
         theta = np.arccos(z)
         ax.plot(
-            [-wn_max * np.cos(theta), 0], [wn_max * np.sin(theta), 0],
-            "k--", alpha=0.2, linewidth=0.8,
+            [-wn_max * np.cos(theta), 0],
+            [wn_max * np.sin(theta), 0],
+            "k--",
+            alpha=0.2,
+            linewidth=0.8,
         )
         ax.plot(
-            [-wn_max * np.cos(theta), 0], [-wn_max * np.sin(theta), 0],
-            "k--", alpha=0.2, linewidth=0.8,
+            [-wn_max * np.cos(theta), 0],
+            [-wn_max * np.sin(theta), 0],
+            "k--",
+            alpha=0.2,
+            linewidth=0.8,
         )
         ax.text(
-            -wn_max * np.cos(theta) * 0.5, wn_max * np.sin(theta) * 0.5,
-            f"z={z}", fontsize=7, alpha=0.4,
+            -wn_max * np.cos(theta) * 0.5,
+            wn_max * np.sin(theta) * 0.5,
+            f"z={z}",
+            fontsize=7,
+            alpha=0.4,
         )
 
     # Natural frequency circles
     for wn in np.arange(0.2, wn_max, 0.2):
-        circle = plt.Circle((0, 0), wn, fill=False, linestyle=":",
-                             color="gray", alpha=0.2)
+        circle = plt.Circle((0, 0), wn, fill=False, linestyle=":", color="gray", alpha=0.2)
         ax.add_patch(circle)
 
     ax.axvline(0, color="k", linewidth=0.5)
@@ -332,6 +360,7 @@ def plot_speed_sensitivity(
 # Empirical plots
 # ===================================================================
 
+
 def plot_step_response(
     steps: list[StepResponseMetrics],
     recorder: Recorder | None = None,
@@ -340,7 +369,10 @@ def plot_step_response(
     plt = _import_plt()
 
     fig, axes = plt.subplots(
-        2, 1, figsize=(10, 6), sharex=True,
+        2,
+        1,
+        figsize=(10, 6),
+        sharex=True,
         gridspec_kw={"height_ratios": [2, 1]},
     )
     fig.suptitle("Step Response Analysis")
@@ -349,10 +381,14 @@ def plot_step_response(
         t = np.array([s.t for s in recorder.steps])
         heading_deg = np.degrees(np.array([s.sensors.heading for s in recorder.steps]))
         rudder_deg = np.degrees(np.array([s.control.rudder_angle for s in recorder.steps]))
-        target_deg = np.degrees(np.array([
-            s.target_heading if s.target_heading is not None else s.sensors.heading
-            for s in recorder.steps
-        ]))
+        target_deg = np.degrees(
+            np.array(
+                [
+                    s.target_heading if s.target_heading is not None else s.sensors.heading
+                    for s in recorder.steps
+                ]
+            )
+        )
 
         axes[0].plot(t, heading_deg, "b-", linewidth=1, label="Heading")
         axes[0].plot(t, target_deg, "k--", linewidth=1, label="Target")
@@ -362,10 +398,11 @@ def plot_step_response(
     for s in steps:
         axes[0].axvline(s.step_time_s, color="g", linestyle=":", alpha=0.5)
         axes[0].annotate(
-            f"RT={s.rise_time_s:.1f}s\nOS={s.overshoot_pct:.0f}%\n"
-            f"ST={s.settling_time_s:.1f}s",
-            xy=(s.step_time_s, 0), xycoords=("data", "axes fraction"),
-            fontsize=7, va="bottom",
+            f"RT={s.rise_time_s:.1f}s\nOS={s.overshoot_pct:.0f}%\nST={s.settling_time_s:.1f}s",
+            xy=(s.step_time_s, 0),
+            xycoords=("data", "axes fraction"),
+            fontsize=7,
+            va="bottom",
         )
 
     axes[0].set_ylabel("Heading [deg]")
@@ -392,23 +429,22 @@ def plot_estimated_bode(
     f = estimate.frequencies
     mask = f > 0  # skip DC
 
-    ax_mag.semilogx(f[mask], estimate.magnitude_db[mask], "b-", linewidth=1.5,
-                    label="Empirical")
-    ax_ph.semilogx(f[mask], estimate.phase_deg[mask], "r-", linewidth=1.5,
-                   label="Empirical")
+    ax_mag.semilogx(f[mask], estimate.magnitude_db[mask], "b-", linewidth=1.5, label="Empirical")
+    ax_ph.semilogx(f[mask], estimate.phase_deg[mask], "r-", linewidth=1.5, label="Empirical")
     ax_coh.semilogx(f[mask], estimate.coherence[mask], "g-", linewidth=1.5)
 
     if model_result is not None:
         w = f[mask] * 2 * np.pi  # Hz to rad/s
         _, H = signal.freqresp(
-            model_result.closed_loop_tf if hasattr(model_result, "plant_tf")
+            model_result.closed_loop_tf
+            if hasattr(model_result, "plant_tf")
             else model_result.plant_tf,
             w,
         )
-        ax_mag.semilogx(f[mask], 20.0 * np.log10(np.abs(H) + 1e-30),
-                        "b--", alpha=0.6, label="Model")
-        ax_ph.semilogx(f[mask], np.degrees(np.unwrap(np.angle(H))),
-                       "r--", alpha=0.6, label="Model")
+        ax_mag.semilogx(
+            f[mask], 20.0 * np.log10(np.abs(H) + 1e-30), "b--", alpha=0.6, label="Model"
+        )
+        ax_ph.semilogx(f[mask], np.degrees(np.unwrap(np.angle(H))), "r--", alpha=0.6, label="Model")
 
     ax_mag.set_ylabel("Magnitude [dB]")
     ax_mag.legend(fontsize=8)
@@ -442,7 +478,9 @@ def plot_rudder_spectrum(
 
     if analysis.dominant_freq_hz > 0:
         ax.axvline(
-            analysis.dominant_freq_hz, color="r", linestyle="--",
+            analysis.dominant_freq_hz,
+            color="r",
+            linestyle="--",
             label=f"Dominant: {analysis.dominant_freq_hz:.3f} Hz",
         )
 
@@ -470,8 +508,11 @@ def plot_saturation_summary(
     bars = ax.bar(labels, values, color=colors, width=0.5)
     for bar, val in zip(bars, values, strict=True):
         ax.text(
-            bar.get_x() + bar.get_width() / 2, bar.get_height() + 1,
-            f"{val:.1f}%", ha="center", fontsize=10,
+            bar.get_x() + bar.get_width() / 2,
+            bar.get_height() + 1,
+            f"{val:.1f}%",
+            ha="center",
+            fontsize=10,
         )
 
     ax.set_ylabel("Time at limit [%]")

@@ -5,6 +5,8 @@ Contributions and feedback are welcome!
 
 A physics-based simulation framework for developing and testing sailing yacht autopilots. It models the coupled dynamics of wind, waves, current, and vessel response so that autopilot controllers can be evaluated under realistic conditions — without going on the water.
 
+![Viewer screenshot — rough seas scenario](demo/demo_image.jpg)
+
 ## Purpose
 
 Autopilot tuning on a real sailboat is slow, weather-dependent, and hard to reproduce. This simulator provides a deterministic, repeatable environment where you can:

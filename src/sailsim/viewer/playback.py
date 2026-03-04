@@ -510,11 +510,22 @@ class PlaybackViewer:
             # Rudder torque + cumulative energy
             torques = [s.rudder_torque if s.rudder_torque is not None else 0.0 for s in rec.steps]
             self._ax_torque.plot(times, torques, color=color, lw=1)
-            energy = np.cumsum([abs(t) * abs(
-                rec.steps[i].control.rudder_angle - rec.steps[i - 1].control.rudder_angle
-            ) if i > 0 else 0.0 for i, t in enumerate(torques)])
+            energy = np.cumsum(
+                [
+                    abs(t)
+                    * abs(rec.steps[i].control.rudder_angle - rec.steps[i - 1].control.rudder_angle)
+                    if i > 0
+                    else 0.0
+                    for i, t in enumerate(torques)
+                ]
+            )
             self._ax_energy.plot(
-                times, energy, color=color, ls="--", lw=1, alpha=0.7,
+                times,
+                energy,
+                color=color,
+                ls="--",
+                lw=1,
+                alpha=0.7,
             )
 
         # ── Trajectory decorations ──

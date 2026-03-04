@@ -30,6 +30,7 @@ if TYPE_CHECKING:
 # Data classes
 # ---------------------------------------------------------------------------
 
+
 @dataclass
 class StabilityMargins:
     """Classical gain and phase margins of the open-loop system."""
@@ -90,6 +91,7 @@ class SpeedSweepResult:
 # Transfer function builders
 # ---------------------------------------------------------------------------
 
+
 def build_plant_tf(K: float, T: float) -> signal.TransferFunction:
     """1st-order Nomoto heading transfer function.
 
@@ -102,7 +104,10 @@ def build_plant_tf(K: float, T: float) -> signal.TransferFunction:
 
 
 def build_plant_tf_2nd(
-    K: float, T1: float, T2: float, T3: float,
+    K: float,
+    T1: float,
+    T2: float,
+    T3: float,
 ) -> signal.TransferFunction:
     """2nd-order Nomoto heading transfer function.
 
@@ -111,12 +116,14 @@ def build_plant_tf_2nd(
     num = np.polymul([K * T3, K], [1.0])  # K*(T3*s + 1)
     # den = s * (T1*s+1) * (T2*s+1)
     d12 = np.polymul([T1, 1.0], [T2, 1.0])  # (T1*s+1)*(T2*s+1)
-    den = np.polymul(d12, [1.0, 0.0])        # * s
+    den = np.polymul(d12, [1.0, 0.0])  # * s
     return signal.TransferFunction(num, den)
 
 
 def build_controller_tf(
-    Kp: float, Kd: float, Ki: float,
+    Kp: float,
+    Kd: float,
+    Ki: float,
 ) -> signal.TransferFunction:
     """PID controller transfer function.
 
@@ -128,6 +135,7 @@ def build_controller_tf(
 # ---------------------------------------------------------------------------
 # Margin computation
 # ---------------------------------------------------------------------------
+
 
 def compute_margins(L: signal.TransferFunction) -> StabilityMargins:
     """Compute gain/phase margins from the open-loop transfer function.
@@ -160,9 +168,7 @@ def compute_margins(L: signal.TransferFunction) -> StabilityMargins:
     crossings_pc = np.where(np.diff(np.sign(phase_shifted)))[0]
     if len(crossings_pc) > 0:
         idx = crossings_pc[0]
-        frac = -phase_shifted[idx] / (
-            phase_shifted[idx + 1] - phase_shifted[idx] + 1e-30
-        )
+        frac = -phase_shifted[idx] / (phase_shifted[idx + 1] - phase_shifted[idx] + 1e-30)
         pc_freq = w[idx] + frac * (w[idx + 1] - w[idx])
         mag_at_pc = mag[idx] + frac * (mag[idx + 1] - mag[idx])
         gm_db = -20.0 * np.log10(mag_at_pc + 1e-30)
@@ -207,6 +213,7 @@ def _analyze_poles(tf: signal.TransferFunction) -> ClosedLoopPoles:
 # ---------------------------------------------------------------------------
 # Main analysis functions
 # ---------------------------------------------------------------------------
+
 
 def analyze_at_speed(
     yacht: YachtConfig,
@@ -296,8 +303,11 @@ def sweep_speed(
 # Describing function for rate limiter
 # ---------------------------------------------------------------------------
 
+
 def describing_function_rate_limiter(
-    rate_limit: float, amplitude: float, omega: float,
+    rate_limit: float,
+    amplitude: float,
+    omega: float,
 ) -> complex:
     """Sinusoidal-input describing function (SIDF) of a rate limiter.
 

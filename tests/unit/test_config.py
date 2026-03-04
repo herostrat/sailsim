@@ -37,12 +37,7 @@ def test_scenario_strips_yacht_and_autopilot_sections(tmp_path):
     """Scenario TOML with [yacht] or [autopilot] sections: they are ignored."""
     scenario = tmp_path / "test.toml"
     scenario.write_text(
-        'name = "test"\n'
-        "target_heading = 1.0\n"
-        "[yacht]\n"
-        "mass = 9999.0\n"
-        "[autopilot]\n"
-        "kp = 9.9\n"
+        'name = "test"\ntarget_heading = 1.0\n[yacht]\nmass = 9999.0\n[autopilot]\nkp = 9.9\n'
     )
     config = load_scenario(scenario)
     assert config.target_heading == 1.0

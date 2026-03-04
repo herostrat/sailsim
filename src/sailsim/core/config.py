@@ -274,7 +274,9 @@ def load_scenario(
     return ScenarioConfig(**data)
 
 
-def load_yacht(name_or_path: str | Path = "default", *, configs_root: Path | None = None) -> YachtConfig:
+def load_yacht(
+    name_or_path: str | Path = "default", *, configs_root: Path | None = None
+) -> YachtConfig:
     """Load a yacht configuration from a profile name or TOML path.
 
     Examples::
@@ -286,7 +288,9 @@ def load_yacht(name_or_path: str | Path = "default", *, configs_root: Path | Non
     return YachtConfig(**data)
 
 
-def load_autopilot(name_or_path: str | Path = "heading_hold", *, configs_root: Path | None = None) -> AutopilotConfig:
+def load_autopilot(
+    name_or_path: str | Path = "heading_hold", *, configs_root: Path | None = None
+) -> AutopilotConfig:
     """Load an autopilot configuration from a profile name or TOML path.
 
     Examples::

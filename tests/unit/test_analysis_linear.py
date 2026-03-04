@@ -29,6 +29,7 @@ def yacht() -> YachtConfig:
 # Transfer function construction
 # -------------------------------------------------------------------
 
+
 class TestBuildPlantTF:
     def test_coefficients_1st_order(self) -> None:
         """G(s) = K / (T*s^2 + s) — check num and den ratios."""
@@ -37,7 +38,8 @@ class TestBuildPlantTF:
         # scipy normalizes so den[0]=1; check ratios instead
         np.testing.assert_array_almost_equal(G.num / G.num[0], [1.0])
         np.testing.assert_array_almost_equal(
-            G.den / G.den[0], [1.0, 1.0 / T, 0.0],
+            G.den / G.den[0],
+            [1.0, 1.0 / T, 0.0],
         )
         # Verify gain ratio: num[0] / den[0] should give K / T
         assert abs(G.num[0] / G.den[0] - K / T) < 1e-10
@@ -56,10 +58,12 @@ class TestBuildPlantTF:
         expected_num = np.array([K * T3, K])
         expected_den = np.array([T1 * T2, T1 + T2, 1.0, 0.0])
         np.testing.assert_array_almost_equal(
-            G.num / G.den[0], expected_num / expected_den[0],
+            G.num / G.den[0],
+            expected_num / expected_den[0],
         )
         np.testing.assert_array_almost_equal(
-            G.den / G.den[0], expected_den / expected_den[0],
+            G.den / G.den[0],
+            expected_den / expected_den[0],
         )
 
 
@@ -75,6 +79,7 @@ class TestBuildControllerTF:
 # -------------------------------------------------------------------
 # Stability margins
 # -------------------------------------------------------------------
+
 
 class TestComputeMargins:
     def test_stable_system_positive_margins(self, yacht: YachtConfig) -> None:
@@ -95,6 +100,7 @@ class TestComputeMargins:
 # -------------------------------------------------------------------
 # Pole analysis
 # -------------------------------------------------------------------
+
 
 class TestPoleAnalysis:
     def test_stable_poles(self, yacht: YachtConfig) -> None:
@@ -128,6 +134,7 @@ class TestPoleAnalysis:
 # Speed sweep
 # -------------------------------------------------------------------
 
+
 class TestSpeedSweep:
     def test_sweep_length(self, yacht: YachtConfig) -> None:
         U_range = np.linspace(1.0, 6.0, 6)
@@ -160,37 +167,48 @@ class TestSpeedSweep:
 # Describing function
 # -------------------------------------------------------------------
 
+
 class TestDescribingFunction:
     def test_no_clipping(self) -> None:
         """If A*omega < rate_limit, N = 1."""
         N = describing_function_rate_limiter(
-            rate_limit=5.0, amplitude=1.0, omega=2.0,
+            rate_limit=5.0,
+            amplitude=1.0,
+            omega=2.0,
         )
         assert complex(1.0, 0.0) == N
 
     def test_at_boundary(self) -> None:
         """If A*omega == rate_limit, N = 1."""
         N = describing_function_rate_limiter(
-            rate_limit=5.0, amplitude=1.0, omega=5.0,
+            rate_limit=5.0,
+            amplitude=1.0,
+            omega=5.0,
         )
         assert complex(1.0, 0.0) == N
 
     def test_clipping_reduces_gain(self) -> None:
         """If A*omega > rate_limit, |N| < 1."""
         N = describing_function_rate_limiter(
-            rate_limit=1.0, amplitude=1.0, omega=10.0,
+            rate_limit=1.0,
+            amplitude=1.0,
+            omega=10.0,
         )
         assert abs(N) < 1.0
 
     def test_zero_amplitude(self) -> None:
         N = describing_function_rate_limiter(
-            rate_limit=5.0, amplitude=0.0, omega=1.0,
+            rate_limit=5.0,
+            amplitude=0.0,
+            omega=1.0,
         )
         assert complex(1.0, 0.0) == N
 
     def test_zero_omega(self) -> None:
         N = describing_function_rate_limiter(
-            rate_limit=5.0, amplitude=1.0, omega=0.0,
+            rate_limit=5.0,
+            amplitude=1.0,
+            omega=0.0,
         )
         assert complex(1.0, 0.0) == N
 
@@ -198,6 +216,7 @@ class TestDescribingFunction:
 # -------------------------------------------------------------------
 # Full analysis integration
 # -------------------------------------------------------------------
+
 
 class TestAnalyzeAtSpeed:
     def test_returns_complete_result(self, yacht: YachtConfig) -> None:

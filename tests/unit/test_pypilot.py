@@ -114,9 +114,7 @@ class TestSensorNmea:
 
     @patch("sailsim.autopilot.pypilot.socket.socket")
     @patch("sailsim.autopilot.pypilot.select.select")
-    def test_push_sensors_converts_speed_to_knots(
-        self, mock_select, mock_socket_cls, sensors
-    ):
+    def test_push_sensors_converts_speed_to_knots(self, mock_select, mock_socket_cls, sensors):
         """Speed values are converted from m/s to knots in NMEA."""
         json_sock = _make_mock_socket()
         nmea_sock = _make_mock_socket()
@@ -150,9 +148,7 @@ class TestCompute:
 
     @patch("sailsim.autopilot.pypilot.socket.socket")
     @patch("sailsim.autopilot.pypilot.select.select")
-    def test_compute_maps_servo_to_rudder_position(
-        self, mock_select, mock_socket_cls, sensors
-    ):
+    def test_compute_maps_servo_to_rudder_position(self, mock_select, mock_socket_cls, sensors):
         """servo.command is mapped (negated) to rudder position: angle = -cmd * rudder_max."""
         json_sock = _make_mock_socket(b"servo.command=0.5\n")
         nmea_sock = _make_mock_socket()
@@ -161,7 +157,9 @@ class TestCompute:
 
         rudder_max = math.radians(30.0)
         ap = PypilotAutopilot(
-            host="test", json_port=23322, nmea_port=20220,
+            host="test",
+            json_port=23322,
+            nmea_port=20220,
             rudder_max=rudder_max,
         )
 
@@ -181,7 +179,9 @@ class TestCompute:
 
         rudder_max = math.radians(30.0)
         ap = PypilotAutopilot(
-            host="test", json_port=23322, nmea_port=20220,
+            host="test",
+            json_port=23322,
+            nmea_port=20220,
             rudder_max=rudder_max,
         )
 
@@ -190,9 +190,7 @@ class TestCompute:
 
     @patch("sailsim.autopilot.pypilot.socket.socket")
     @patch("sailsim.autopilot.pypilot.select.select")
-    def test_compute_updates_rudder_each_step(
-        self, mock_select, mock_socket_cls, sensors
-    ):
+    def test_compute_updates_rudder_each_step(self, mock_select, mock_socket_cls, sensors):
         """Rudder angle updates (not accumulates) each compute() call."""
         json_sock = _make_mock_socket(b"servo.command=0.5\n")
         nmea_sock = _make_mock_socket()
@@ -201,7 +199,9 @@ class TestCompute:
 
         rudder_max = math.radians(30.0)
         ap = PypilotAutopilot(
-            host="test", json_port=23322, nmea_port=20220,
+            host="test",
+            json_port=23322,
+            nmea_port=20220,
             rudder_max=rudder_max,
         )
 

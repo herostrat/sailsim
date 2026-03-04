@@ -20,6 +20,7 @@ if TYPE_CHECKING:
 # Data classes
 # ---------------------------------------------------------------------------
 
+
 @dataclass
 class StepResponseMetrics:
     """Metrics for a single heading step response."""
@@ -59,6 +60,7 @@ class RudderActivityAnalysis:
 # Signal extraction
 # ---------------------------------------------------------------------------
 
+
 def _extract_signals(
     recorder: Recorder,
 ) -> tuple[np.ndarray, np.ndarray, np.ndarray, np.ndarray, np.ndarray, np.ndarray]:
@@ -67,10 +69,12 @@ def _extract_signals(
     heading = np.array([s.sensors.heading for s in recorder.steps])
     rudder = np.array([s.control.rudder_angle for s in recorder.steps])
     yaw_rate = np.array([s.sensors.yaw_rate for s in recorder.steps])
-    target = np.array([
-        s.target_heading if s.target_heading is not None else s.sensors.heading
-        for s in recorder.steps
-    ])
+    target = np.array(
+        [
+            s.target_heading if s.target_heading is not None else s.sensors.heading
+            for s in recorder.steps
+        ]
+    )
     speed = np.array([s.sensors.speed_through_water for s in recorder.steps])
     return t, heading, rudder, yaw_rate, target, speed
 
@@ -84,8 +88,10 @@ def _wrap_error(error: np.ndarray) -> np.ndarray:
 # Step response analysis
 # ---------------------------------------------------------------------------
 
+
 def extract_step_responses(
-    recorder: Recorder, min_step_deg: float = 5.0,
+    recorder: Recorder,
+    min_step_deg: float = 5.0,
 ) -> list[StepResponseMetrics]:
     """Detect setpoint steps in target_heading and measure response.
 
@@ -165,15 +171,17 @@ def extract_step_responses(
         # Peak rudder
         peak_rudder = float(np.max(np.abs(rudder_win)))
 
-        results.append(StepResponseMetrics(
-            step_time_s=step_time,
-            step_magnitude_deg=float(step_mag),
-            rise_time_s=float(rise_time),
-            settling_time_s=float(settling_time),
-            overshoot_pct=float(overshoot_pct),
-            steady_state_error_deg=ss_error,
-            peak_rudder_deg=peak_rudder,
-        ))
+        results.append(
+            StepResponseMetrics(
+                step_time_s=step_time,
+                step_magnitude_deg=float(step_mag),
+                rise_time_s=float(rise_time),
+                settling_time_s=float(settling_time),
+                overshoot_pct=float(overshoot_pct),
+                steady_state_error_deg=ss_error,
+                peak_rudder_deg=peak_rudder,
+            )
+        )
 
     return results
 
@@ -182,8 +190,10 @@ def extract_step_responses(
 # Spectral transfer function estimation
 # ---------------------------------------------------------------------------
 
+
 def estimate_transfer_function(
-    recorder: Recorder, nperseg: int = 256,
+    recorder: Recorder,
+    nperseg: int = 256,
 ) -> SpectralEstimate:
     """Estimate H(f) = Sxy/Sxx via Welch cross-spectral method.
 
@@ -231,6 +241,7 @@ def estimate_transfer_function(
 # ---------------------------------------------------------------------------
 # Rudder activity analysis
 # ---------------------------------------------------------------------------
+
 
 def analyze_rudder_activity(
     recorder: Recorder,
