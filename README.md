@@ -45,10 +45,11 @@ Both modes use Fossen's marine vessel convention with added-mass, linear damping
 
 ### Autopilot
 
-The autopilot is pluggable — any implementation that satisfies the `AutopilotProtocol` (a `compute()` + `set_target_heading()` interface) can be used. Two implementations are included:
+The autopilot is pluggable — any implementation that satisfies the `AutopilotProtocol` (a `compute()` + `set_target_heading()` interface) can be used. Three implementations are included:
 
 - **Nomoto** (`type = "nomoto"`) — model-based heading controller that derives gains from the yacht's hydrodynamic coefficients using pole placement (natural frequency omega_n and damping ratio zeta). Includes rudder rate limiting and optional automatic sail trim based on apparent wind angle.
-- **SignalK** (`type = "signalk"`) — adapter that publishes sensor data to an external [SignalK](https://signalk.org/) server and reads rudder commands back via HTTP. This lets you test a real autopilot algorithm running outside the simulator.
+- **SignalK** (`type = "signalk"`) — adapter that publishes sensor data to an external [SignalK](https://signalk.org/) server and reads rudder commands back via HTTP. *Note: SignalK integration is not yet fully implemented and cannot be used at this time.*
+- **pypilot** (`type = "pypilot"`) — adapter for the open-source [pypilot](https://pypilot.org/) autopilot. Communicates via NMEA-0183 (sensors) and JSON-TCP (control/servo). Runs in Docker for testing.
 
 ### Navigation
 
@@ -101,11 +102,13 @@ sailsim --scenario calm_heading_hold --autopilot /path/to/my_gains.toml
 
 ### Use an external autopilot via SignalK
 
+> **Note:** SignalK integration is not yet fully implemented and cannot be used at this time.
+
 ```bash
 sailsim --scenario calm_heading_hold --autopilot signalk
 ```
 
-This connects to a SignalK server (default `http://localhost:3000`), publishes sensor data each time step, and reads the rudder angle back. Your autopilot algorithm runs externally and communicates through the SignalK API.
+This will connect to a SignalK server (default `http://localhost:3000`), publish sensor data each time step, and read the rudder angle back. Your autopilot algorithm runs externally and communicates through the SignalK API.
 
 ### Run and view interactively
 
@@ -146,6 +149,24 @@ y = 100.0
 tolerance = 15.0
 ```
 
+### Stability analysis
+
+A dedicated analysis tool computes classical control-theory stability metrics for any autopilot. It works in two modes — model-based (analytical) and data-driven (empirical). See [docs/stability_analysis.md](docs/stability_analysis.md) for the full theory.
+
+```bash
+# Analytical: Bode, Nyquist, pole-zero at a single speed
+python scripts/analyze_autopilot.py analytical --yacht default --speed 3.0
+
+# Analytical: stability margins across a speed range
+python scripts/analyze_autopilot.py analytical --yacht default --sweep
+
+# Empirical: analyse a recorded simulation
+python scripts/analyze_autopilot.py empirical recording.json
+
+# Full: run simulation + both analyses
+python scripts/analyze_autopilot.py full --scenario calm_heading_hold
+```
+
 ### Export telemetry to CSV
 
 ```bash
@@ -163,6 +184,7 @@ sailsim --scenario calm_heading_hold --output telemetry.csv
 | `--save-json PATH` | Save recording as JSON |
 | `--output PATH` | Export telemetry to CSV |
 | `--quiet` | Suppress progress output |
+| `--json PATH` | Alias for `--save-json` |
 
 ### Shell completion
 
@@ -240,6 +262,7 @@ Scenario files live in `configs/scenarios/`.
 | `compare_conservative.toml` | Gusty close reach for tuning comparison |
 | `compare_aggressive.toml` | Same conditions, different quality gates |
 | `waypoint_triangle.toml` | 3 waypoints forming a triangle |
+| `pypilot_heading_hold.toml` | 60s pypilot benchmark (Docker, real-time paced) |
 
 ### Yacht profiles
 
@@ -256,7 +279,8 @@ Autopilot configurations live in `configs/autopilots/`:
 | `heading_hold` | Nomoto | Moderate gains (omega_n=0.5, zeta=0.8) for steady-state course keeping |
 | `tack` | Nomoto | Responsive gains (omega_n=0.6, zeta=0.7) with fast rudder for tacking |
 | `gybe` | Nomoto | Moderate gains (omega_n=0.5, zeta=0.7) with fast rudder for gybing |
-| `signalk` | SignalK | External autopilot via SignalK server |
+| `signalk` | SignalK | External autopilot via SignalK server (not yet fully implemented) |
+| `pypilot` | pypilot | External autopilot via pypilot (Docker) |
 
 ### Quality gates
 
@@ -271,7 +295,8 @@ Each scenario defines pass/fail thresholds:
 
 ```
 src/sailsim/
-  autopilot/       Autopilot protocol, Nomoto controller, SignalK adapter, factory
+  analysis/        Stability analysis (linear TFs, empirical spectral, plots, reports)
+  autopilot/       Autopilot protocol, Nomoto controller, SignalK/pypilot adapters, factory
   core/            Config loading, simulation runner, data types
   environment/     Wind, wave, and current models
   physics/         Aerodynamics, hydrodynamics, hydrostatics, wave forces, integration
@@ -281,12 +306,21 @@ src/sailsim/
   viewer/          Interactive matplotlib playback viewer
   cli.py           Command-line interface
 
+scripts/
+  analyze_autopilot.py   Stability analysis CLI (analytical / empirical / full)
+  stability_check.py     Quick divergence check across yacht profiles
+  estimate_yacht_coefficients.py   Coefficient estimation from hull dimensions
+
 completions/       Bash and Zsh tab completion scripts
 
 configs/
-  autopilots/      Autopilot profile TOMLs (Nomoto tunings, SignalK)
+  autopilots/      Autopilot profile TOMLs (Nomoto tunings, SignalK, pypilot)
   scenarios/       TOML scenario definitions (environment, timing, maneuvers)
   yachts/          Yacht parameter files (hull, rig, appendages)
+
+docs/
+  stability_analysis.md     Control-theoretic stability analysis guide
+  yacht_coefficient_estimation.md   Hull-to-parameter derivation
 
 tests/
   unit/            Unit tests for individual modules

@@ -94,3 +94,49 @@ _sailsim_complete_autopilot() {
 
 compdef _sailsim sailsim
 compdef _sailsim 'python -m sailsim'
+
+# --- Completion for analyze_autopilot.py ---
+
+_analyze_autopilot() {
+    local curcontext="$curcontext" state line
+    typeset -A opt_args
+
+    _arguments -C \
+        '1:command:(analytical empirical full)' \
+        '*::arg:->args'
+
+    case $state in
+        args)
+            case $line[1] in
+                analytical)
+                    _arguments -s \
+                        '--yacht[Yacht profile name or TOML path]:yacht:_sailsim_complete_yacht' \
+                        '--autopilot[Autopilot profile name or TOML path]:autopilot:_sailsim_complete_autopilot' \
+                        '--speed[Speed in m/s]:speed:' \
+                        '--omega-n[Natural frequency override]:omega_n:' \
+                        '--zeta[Damping ratio override]:zeta:' \
+                        '--sweep[Speed sweep mode]' \
+                        '--save-dir[Directory to save plots]:directory:_directories' \
+                        '--no-plot[Skip plot generation]' \
+                        '--help[Show help]'
+                    ;;
+                empirical)
+                    _arguments -s \
+                        '*:JSON recording file:_files -g "*.json"' \
+                        '--rate-limit[Rudder rate limit deg/s]:rate:' \
+                        '--save-dir[Directory to save plots]:directory:_directories' \
+                        '--no-plot[Skip plot generation]' \
+                        '--help[Show help]'
+                    ;;
+                full)
+                    _arguments -s \
+                        '--scenario[Scenario profile name or TOML path]:scenario:_sailsim_complete_scenario' \
+                        '--save-dir[Directory to save output]:directory:_directories' \
+                        '--help[Show help]'
+                    ;;
+            esac
+            ;;
+    esac
+}
+
+compdef _analyze_autopilot analyze_autopilot.py
