@@ -1,0 +1,7 @@
+type = "pypilot"
+pypilot_host = "localhost"
+pypilot_json_port = 23322
+pypilot_nmea_port = 20220
+pypilot_rudder_max_deg = 30.0
+pypilot_mode = "compass"
+pypilot_sim_sleep_ms = 50  # real-time pacing (ms per step)

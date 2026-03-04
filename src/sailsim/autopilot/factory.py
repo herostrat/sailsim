@@ -20,6 +20,7 @@ def create_autopilot(
     Supported types:
     - ``"nomoto"``: Nomoto model with pole placement (requires *yacht*)
     - ``"signalk"``: adapter that communicates via a SignalK server
+    - ``"pypilot"``: adapter that communicates via pypilot JSON-TCP
     """
     if config.type == "nomoto":
         if yacht is None:
@@ -38,5 +39,16 @@ def create_autopilot(
         from sailsim.autopilot.signalk import SignalKAutopilot
 
         return SignalKAutopilot(url=config.signalk_url)
+    elif config.type == "pypilot":
+        from sailsim.autopilot.pypilot import PypilotAutopilot
+
+        return PypilotAutopilot(
+            host=config.pypilot_host,
+            json_port=config.pypilot_json_port,
+            nmea_port=config.pypilot_nmea_port,
+            rudder_max=np.radians(config.pypilot_rudder_max_deg),
+            mode=config.pypilot_mode,
+            sim_sleep_ms=config.pypilot_sim_sleep_ms,
+        )
     else:
         raise ValueError(f"Unknown autopilot type: {config.type!r}")

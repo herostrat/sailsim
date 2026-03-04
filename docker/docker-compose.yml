@@ -1,0 +1,12 @@
+services:
+  pypilot:
+    build: ./pypilot
+    ports:
+      - "23322:23322"
+      - "20220:20220"
+    healthcheck:
+      test: python3 -c "import socket; s=socket.create_connection(('localhost',23322),2); s.close()"
+      interval: 5s
+      timeout: 3s
+      retries: 5
+      start_period: 10s

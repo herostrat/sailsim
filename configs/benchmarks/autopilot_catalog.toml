@@ -1,0 +1,33 @@
+# pypilot gates are significantly relaxed compared to nomoto (calm: 5°/10°/30s).
+# This is expected because pypilot runs as an external process with inherent limitations:
+#
+# 1. Latency: pypilot's control loop runs at ~14 Hz in Docker. NMEA data must be
+#    parsed, routed through compute_heading(), and processed by the PID before
+#    servo.command is updated — introducing 1-3 cycle delay.
+#
+# 2. Heading source: in simulation there is no physical IMU, so a patched
+#    compute_heading() falls back to gps.track (COG from NMEA RMC). COG includes
+#    leeway and reacts slower than true heading.
+#
+# 3. PID tuning: pypilot's basic pilot is tuned for real boats with physical servos,
+#    not for our simulated dynamics. The gains are conservative — servo.command
+#    peaks at ~0.05 for a 5° heading error, producing only ~1.5° of rudder.
+#    Nomoto's model-based controller gives 5-10° for the same error.
+#
+# 4. Real-time pacing: the simulation must sleep 50 ms per step to give pypilot
+#    time to process, making timing non-deterministic. Results vary slightly
+#    between runs.
+#
+# Tighter gates would require tuning pypilot's PID (ap.pilot.basic.P/I/D)
+# for the simulated boat dynamics.
+
+[[benchmark]]
+name = "pypilot_heading_hold"
+scenario = "pypilot_heading_hold"
+autopilot = "pypilot"
+yacht = "default"
+[benchmark.gate_overrides]
+max_heading_deviation_deg = 30.0
+max_settling_time_s = 55.0
+max_mean_heading_error_deg = 15.0
+max_rudder_rate_deg_per_s = 80.0

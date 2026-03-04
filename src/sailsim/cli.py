@@ -89,6 +89,8 @@ def main() -> None:
         print(f"  Yacht: {args.yacht}")
         if ap_config.type == "signalk":
             ap_info = f"signalk @ {ap_config.signalk_url}"
+        elif ap_config.type == "pypilot":
+            ap_info = f"pypilot @ {ap_config.pypilot_host}:{ap_config.pypilot_json_port}"
         else:
             ap_info = f"nomoto (omega_n={ap_config.omega_n}, zeta={ap_config.zeta})"
         print(f"  Autopilot: {ap_info} [{args.autopilot}]")
