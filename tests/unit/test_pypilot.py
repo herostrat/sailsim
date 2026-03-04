@@ -234,6 +234,34 @@ class TestCompute:
         assert isinstance(cmd2, ControlCommand)
 
     @patch("sailsim.autopilot.pypilot.socket.socket")
+    @patch("sailsim.autopilot.pypilot.select.select")
+    def test_compute_reconnects_after_error(self, mock_select, mock_socket_cls, sensors):
+        """After connection loss, adapter reconnects on next compute() call."""
+        json_sock1 = _make_mock_socket(b"servo.command=0.3\n")
+        nmea_sock1 = _make_mock_socket()
+        json_sock2 = _make_mock_socket(b"servo.command=0.2\n")
+        nmea_sock2 = _make_mock_socket()
+        mock_socket_cls.side_effect = [json_sock1, nmea_sock1, json_sock2, nmea_sock2]
+        mock_select.return_value = ([json_sock1], [], [])
+
+        ap = PypilotAutopilot(host="test", json_port=23322, nmea_port=20220)
+        ap.compute(sensors, dt=0.05)
+
+        # Connection drops
+        nmea_sock1.sendall.side_effect = OSError("connection lost")
+        ap.compute(sensors, dt=0.05)  # Uses last command, resets sockets
+
+        # Sockets should be cleared for reconnection
+        assert ap._json_sock is None
+        assert ap._nmea_sock is None
+
+        # Next call reconnects with fresh sockets
+        mock_select.return_value = ([json_sock2], [], [])
+        cmd3 = ap.compute(sensors, dt=0.05)
+        assert mock_socket_cls.call_count == 4  # 2 initial + 2 reconnect
+        assert isinstance(cmd3, ControlCommand)
+
+    @patch("sailsim.autopilot.pypilot.socket.socket")
     def test_compute_raises_on_first_failure(self, mock_socket_cls, sensors):
         """First compute() failure raises ConnectionError."""
         mock_sock = MagicMock()

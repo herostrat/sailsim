@@ -119,6 +119,8 @@ class PypilotAutopilot:
                 self._last_servo_command,
             )
             servo_cmd = self._last_servo_command
+            # Reset sockets so _ensure_connected will reconnect next call
+            self._close_sockets()
 
         # Map servo command directly to rudder angle (position mode).
         # Negate: pypilot positive = port, simulator positive rudder = starboard.
@@ -226,11 +228,16 @@ class PypilotAutopilot:
 
         return servo_cmd
 
-    def close(self) -> None:
-        """Close both TCP connections."""
+    def _close_sockets(self) -> None:
+        """Close both TCP connections and reset for reconnection."""
         for sock in (self._json_sock, self._nmea_sock):
             if sock is not None:
                 with contextlib.suppress(OSError):
                     sock.close()
         self._json_sock = None
         self._nmea_sock = None
+        self._buf = ""
+
+    def close(self) -> None:
+        """Close both TCP connections."""
+        self._close_sockets()
