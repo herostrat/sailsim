@@ -89,6 +89,8 @@ def main() -> None:
         print(f"  Yacht: {args.yacht}")
         if ap_config.type == "signalk":
             ap_info = f"signalk @ {ap_config.signalk_url}"
+        elif ap_config.type == "signalk_rs":
+            ap_info = f"signalk-rs @ {ap_config.signalk_rs_host}:{ap_config.signalk_rs_http_port}"
         elif ap_config.type == "pypilot":
             ap_info = f"pypilot @ {ap_config.pypilot_host}:{ap_config.pypilot_json_port}"
         else:

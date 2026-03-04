@@ -31,3 +31,17 @@ max_heading_deviation_deg = 30.0
 max_settling_time_s = 55.0
 max_mean_heading_error_deg = 15.0
 max_rudder_rate_deg_per_s = 80.0
+
+# signalk-rs gates are relaxed similar to pypilot — external PID autopilot
+# with inherent latency from NMEA parsing + HTTP rudder readback.
+# Docker image not yet available — benchmark is a scaffold for future use.
+[[benchmark]]
+name = "signalk_rs_heading_hold"
+scenario = "signalk_rs_heading_hold"
+autopilot = "signalk_rs"
+yacht = "default"
+[benchmark.gate_overrides]
+max_heading_deviation_deg = 30.0
+max_settling_time_s = 55.0
+max_mean_heading_error_deg = 15.0
+max_rudder_rate_deg_per_s = 80.0

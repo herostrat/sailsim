@@ -101,10 +101,10 @@ class AutopilotConfig(BaseModel):
     """Autopilot configuration.
 
     The ``type`` field selects the autopilot implementation
-    ("nomoto", "signalk", or "pypilot").
+    ("nomoto", "signalk", "signalk_rs", or "pypilot").
     """
 
-    type: str = "nomoto"  # "nomoto" | "signalk" | "pypilot"
+    type: str = "nomoto"  # "nomoto" | "signalk" | "signalk_rs" | "pypilot"
     auto_sail_trim: bool = False
 
     # SignalK parameters (type="signalk")
@@ -123,6 +123,15 @@ class AutopilotConfig(BaseModel):
     pypilot_rudder_max_deg: float = 30.0
     pypilot_mode: str = "compass"
     pypilot_sim_sleep_ms: float = 0.0  # ms to sleep per compute step (pacing for real-time)
+
+    # signalk-rs parameters (type="signalk_rs")
+    signalk_rs_host: str = "localhost"
+    signalk_rs_http_port: int = 3000
+    signalk_rs_nmea_port: int = 10110
+    signalk_rs_device_id: str = "default"
+    signalk_rs_rudder_max_deg: float = 30.0
+    signalk_rs_mode: str = "compass"
+    signalk_rs_sim_sleep_ms: float = 0.0
 
 
 class InitialStateConfig(BaseModel):

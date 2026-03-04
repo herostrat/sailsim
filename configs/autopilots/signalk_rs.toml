@@ -1,0 +1,10 @@
+# signalk-rs: Rust-based SignalK server with built-in PID autopilot
+# (NOT the original SignalK reference implementation)
+type = "signalk_rs"
+signalk_rs_host = "localhost"
+signalk_rs_http_port = 3000
+signalk_rs_nmea_port = 10110
+signalk_rs_device_id = "default"
+signalk_rs_rudder_max_deg = 30.0
+signalk_rs_mode = "compass"
+signalk_rs_sim_sleep_ms = 50

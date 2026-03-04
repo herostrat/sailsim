@@ -20,6 +20,7 @@ def create_autopilot(
     Supported types:
     - ``"nomoto"``: Nomoto model with pole placement (requires *yacht*)
     - ``"signalk"``: adapter that communicates via a SignalK server
+    - ``"signalk_rs"``: adapter for signalk-rs (Rust-based SignalK with PID autopilot)
     - ``"pypilot"``: adapter that communicates via pypilot JSON-TCP
     """
     if config.type == "nomoto":
@@ -49,6 +50,18 @@ def create_autopilot(
             rudder_max=np.radians(config.pypilot_rudder_max_deg),
             mode=config.pypilot_mode,
             sim_sleep_ms=config.pypilot_sim_sleep_ms,
+        )
+    elif config.type == "signalk_rs":
+        from sailsim.autopilot.signalk_rs import SignalKRsAutopilot
+
+        return SignalKRsAutopilot(
+            host=config.signalk_rs_host,
+            http_port=config.signalk_rs_http_port,
+            nmea_port=config.signalk_rs_nmea_port,
+            device_id=config.signalk_rs_device_id,
+            rudder_max=np.radians(config.signalk_rs_rudder_max_deg),
+            mode=config.signalk_rs_mode,
+            sim_sleep_ms=config.signalk_rs_sim_sleep_ms,
         )
     else:
         raise ValueError(f"Unknown autopilot type: {config.type!r}")

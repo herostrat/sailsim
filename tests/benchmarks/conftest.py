@@ -58,3 +58,50 @@ def pypilot_service():
     _wait_for_pypilot_ready(timeout=30)
     yield svc
     svc.stop()
+
+
+def _wait_for_signalk_rs_ready(
+    host: str = "localhost",
+    port: int = 3000,
+    timeout: float = 30.0,
+) -> None:
+    """Wait until signalk-rs HTTP API is responsive.
+
+    Probes the ``/signalk`` discovery endpoint until it returns a valid
+    JSON response, confirming the server is fully initialized.
+    """
+    import urllib.error
+    import urllib.request
+
+    deadline = time.monotonic() + timeout
+    while time.monotonic() < deadline:
+        try:
+            req = urllib.request.Request(f"http://{host}:{port}/signalk")
+            with urllib.request.urlopen(req, timeout=3) as resp:
+                data = resp.read()
+                if data:
+                    logger.info("signalk-rs HTTP API ready")
+                    return
+        except (urllib.error.URLError, OSError):
+            pass
+        time.sleep(1.0)
+    raise TimeoutError(f"signalk-rs not ready after {timeout}s")
+
+
+@pytest.fixture(scope="session")
+def signalk_rs_service():
+    """Start signalk-rs Docker container for the test session.
+
+    Skipped until a Docker image is available.
+    """
+    pytest.skip("signalk-rs Docker image not yet available")
+    # When Docker image is ready, uncomment and configure:
+    # svc = DockerService(
+    #     compose_file="docker/docker-compose.yml",
+    #     service="signalk-rs",
+    #     health_port=3000,
+    # )
+    # svc.start(timeout=30)
+    # _wait_for_signalk_rs_ready(timeout=30)
+    # yield svc
+    # svc.stop()

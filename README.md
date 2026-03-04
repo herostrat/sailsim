@@ -47,10 +47,11 @@ Both modes use Fossen's marine vessel convention with added-mass, linear damping
 
 ### Autopilot
 
-The autopilot is pluggable — any implementation that satisfies the `AutopilotProtocol` (a `compute()` + `set_target_heading()` interface) can be used. Three implementations are included:
+The autopilot is pluggable — any implementation that satisfies the `AutopilotProtocol` (a `compute()` + `set_target_heading()` interface) can be used. Four implementations are included:
 
 - **Nomoto** (`type = "nomoto"`) — model-based heading controller that derives gains from the yacht's hydrodynamic coefficients using pole placement (natural frequency omega_n and damping ratio zeta). Includes rudder rate limiting and optional automatic sail trim based on apparent wind angle.
-- **SignalK** (`type = "signalk"`) — adapter that publishes sensor data to an external [SignalK](https://signalk.org/) server and reads rudder commands back via HTTP. *Note: SignalK integration is not yet fully implemented and cannot be used at this time.*
+- **SignalK** (`type = "signalk"`) — adapter stub for the original [SignalK](https://signalk.org/) reference server. Currently out of scope: the reference server is a data hub without a built-in autopilot, so there is no autopilot provider to test against. signalk-rs and pypilot both include their own autopilot and can be tested end-to-end directly.
+- **signalk-rs** (`type = "signalk_rs"`) — adapter for [signalk-rs](https://github.com/herostrat/signalk-rs), a Rust-based SignalK server with a built-in PID autopilot (gain scheduling, anti-windup, heel compensation, gust response). Sensors via NMEA-0183 TCP, rudder readback via HTTP, control via V2 Autopilot API. *Note: Docker image not yet available.*
 - **pypilot** (`type = "pypilot"`) — adapter for the open-source [pypilot](https://pypilot.org/) autopilot. Communicates via NMEA-0183 (sensors) and JSON-TCP (control/servo). Runs in Docker for testing.
 
 ### Navigation
@@ -102,15 +103,17 @@ sailsim --scenario tack_port_to_starboard --yacht swan45 --autopilot tack
 sailsim --scenario calm_heading_hold --autopilot /path/to/my_gains.toml
 ```
 
-### Use an external autopilot via SignalK
+### Use an external autopilot
 
-> **Note:** SignalK integration is not yet fully implemented and cannot be used at this time.
+Both signalk-rs and pypilot include their own autopilot and can be tested end-to-end. The original SignalK reference server is a data hub without a built-in autopilot, so it is currently out of scope.
 
 ```bash
-sailsim --scenario calm_heading_hold --autopilot signalk
-```
+# signalk-rs (Docker image not yet available)
+sailsim --scenario calm_heading_hold --autopilot signalk_rs
 
-This will connect to a SignalK server (default `http://localhost:3000`), publish sensor data each time step, and read the rudder angle back. Your autopilot algorithm runs externally and communicates through the SignalK API.
+# pypilot (requires Docker)
+sailsim --scenario pypilot_heading_hold --autopilot pypilot
+```
 
 ### Run and view interactively
 
@@ -265,6 +268,7 @@ Scenario files live in `configs/scenarios/`.
 | `compare_aggressive.toml` | Same conditions, different quality gates |
 | `waypoint_triangle.toml` | 3 waypoints forming a triangle |
 | `pypilot_heading_hold.toml` | 60s pypilot benchmark (Docker, real-time paced) |
+| `signalk_rs_heading_hold.toml` | 60s signalk-rs benchmark (Docker, real-time paced) |
 
 ### Yacht profiles
 
@@ -281,7 +285,8 @@ Autopilot configurations live in `configs/autopilots/`:
 | `heading_hold` | Nomoto | Moderate gains (omega_n=0.5, zeta=0.8) for steady-state course keeping |
 | `tack` | Nomoto | Responsive gains (omega_n=0.6, zeta=0.7) with fast rudder for tacking |
 | `gybe` | Nomoto | Moderate gains (omega_n=0.5, zeta=0.7) with fast rudder for gybing |
-| `signalk` | SignalK | External autopilot via SignalK server (not yet fully implemented) |
+| `signalk` | SignalK | Stub for original SignalK reference server (out of scope — no built-in autopilot) |
+| `signalk_rs` | signalk-rs | External autopilot via signalk-rs — Rust-based SignalK with PID (Docker image not yet available) |
 | `pypilot` | pypilot | External autopilot via pypilot (Docker) |
 
 ### Quality gates
